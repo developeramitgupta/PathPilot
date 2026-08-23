@@ -1,0 +1,485 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  student
+  parent
+  counselor
+  admin
+}
+
+enum DecisionAction {
+  accepted
+  rejected
+  snoozed
+}
+
+enum DecisionTargetType {
+  career
+  college
+  exam
+  degree
+  opportunity
+  project
+}
+
+enum DemandTrend {
+  growing
+  stable
+  declining
+}
+
+enum RoadmapMilestoneStatus {
+  upcoming
+  active
+  done
+}
+
+enum ProjectStatus {
+  suggested
+  in_progress
+  shipped
+}
+
+enum MissionLevel {
+  explorer
+  builder
+  achiever
+  pro
+}
+
+enum ObserverRole {
+  parent
+  counselor
+}
+
+model User {
+  id                   String               @id
+  role                 UserRole             @default(student)
+  name                 String
+  email                String               @unique
+  city                 String?
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  studentProfile       StudentProfile?
+  decisions            Decision[]
+  careerMatches        CareerMatch[]
+  collegeMatches       CollegeMatch[]
+  roadmaps             Roadmap[]
+  projects             Project[]
+  resumes              Resume[]
+  githubAnalyses       GithubAnalysis[]
+  opportunityMatches   OpportunityMatch[]
+  interviewSessions    InterviewSession[]
+  careerSimulations    CareerSimulation[]
+  careerHealthScore    CareerHealthScore?
+  progressSnapshots    ProgressSnapshot[]
+  missions             Mission[]
+  achievements         Achievement[]
+  notifications        Notification[]
+  sharedAccessOwned    SharedAccess[]        @relation("SharedAccessOwner")
+  sharedAccessGranted  SharedAccess[]        @relation("SharedAccessGrantee")
+
+  @@map("users")
+}
+
+model StudentProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique @map("user_id")
+  interests         String[]
+  favoriteSubjects  String[] @map("favorite_subjects")
+  workStyle         Json     @map("work_style")
+  hobbies           String[]
+  salaryExpectation String   @map("salary_expectation")
+  locationPref      String   @map("location_pref")
+  studyPref         String   @map("study_pref")
+  higherStudiesLean Int      @map("higher_studies_lean")
+  strengths         String[]
+  weaknesses        String[]
+  currentStage      String?  @map("current_stage")
+  onboardingDone    Boolean  @default(false) @map("onboarding_done")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("student_profiles")
+}
+
+model Decision {
+  id         String             @id @default(uuid())
+  userId     String             @map("user_id")
+  targetType DecisionTargetType @map("target_type")
+  targetId   String             @map("target_id")
+  action     DecisionAction
+  reason     String?
+  snoozedUntil DateTime?        @map("snoozed_until")
+  createdAt  DateTime           @default(now()) @map("created_at")
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, targetType, targetId])
+  @@map("decisions")
+}
+
+model CareerMatch {
+  id               String      @id @default(uuid())
+  userId           String      @map("user_id")
+  careerKey        String      @map("career_key")
+  careerName       String      @map("career_name")
+  compatibility    Int
+  why              String
+  reasoningRefs    String[]    @map("reasoning_refs")
+  salaryBandEntry  String      @map("salary_band_entry")
+  salaryBandMid    String?     @map("salary_band_mid")
+  salaryBandSenior String?     @map("salary_band_senior")
+  demandTrend      DemandTrend @map("demand_trend")
+  generatedAt      DateTime    @default(now()) @map("generated_at")
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, compatibility])
+  @@map("career_matches")
+}
+
+model College {
+  id                 String   @id @default(uuid())
+  name               String
+  city               String
+  state              String
+  type               String
+  annualCostInr      Int      @map("annual_cost_inr")
+  branches           String[]
+  hostelAvailable    Boolean  @default(false) @map("hostel_available")
+  cultureTags        String[] @map("culture_tags")
+  placementBandLabel String?  @map("placement_band_label")
+  isMockData         Boolean  @default(true) @map("is_mock_data")
+  matches            CollegeMatch[]
+
+  @@index([state, city])
+  @@map("colleges")
+}
+
+model CollegeMatch {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  collegeId     String   @map("college_id")
+  compatibility Int
+  why           String
+  reasoningRefs String[] @map("reasoning_refs")
+  createdAt     DateTime @default(now()) @map("created_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  college       College  @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, collegeId])
+  @@index([userId, compatibility])
+  @@map("college_matches")
+}
+
+model Exam {
+  id                    String   @id @default(uuid())
+  name                  String   @unique
+  difficulty            Int
+  eligibility           String
+  acceptedCareerKeys    String[] @map("accepted_career_keys")
+  acceptedCollegeCount  Int      @map("accepted_college_count")
+  mockDates             Json     @map("mock_dates")
+  tips                  String[]
+  isMockData            Boolean  @default(true) @map("is_mock_data")
+
+  @@map("exams")
+}
+
+model DegreeOption {
+  id               String   @id @default(uuid())
+  key              String   @unique
+  name             String
+  durationMonths   Int      @map("duration_months")
+  averageCostInr   Int      @map("average_cost_inr")
+  flexibilityScore Int     @map("flexibility_score")
+  outcomes         String[]
+  isMockData       Boolean  @default(true) @map("is_mock_data")
+
+  @@map("degree_options")
+}
+
+model Roadmap {
+  id             String           @id @default(uuid())
+  userId         String           @map("user_id")
+  careerKey      String           @map("career_key")
+  careerName     String           @map("career_name")
+  activeVersion  Int              @default(1) @map("active_version")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions       RoadmapVersion[]
+
+  @@index([userId, updatedAt])
+  @@map("roadmaps")
+}
+
+model RoadmapVersion {
+  id         String             @id @default(uuid())
+  roadmapId  String             @map("roadmap_id")
+  version    Int
+  changelog  String?
+  createdAt  DateTime           @default(now()) @map("created_at")
+  roadmap    Roadmap            @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  milestones RoadmapMilestone[]
+
+  @@unique([roadmapId, version])
+  @@map("roadmap_versions")
+}
+
+model RoadmapMilestone {
+  id               String                 @id @default(uuid())
+  roadmapVersionId String                 @map("roadmap_version_id")
+  title            String
+  description      String?
+  phase            String
+  status           RoadmapMilestoneStatus @default(upcoming)
+  estWeeks         Int                    @map("est_weeks")
+  orderIndex       Int                    @map("order_index")
+  completedAt      DateTime?              @map("completed_at")
+  roadmapVersion   RoadmapVersion         @relation(fields: [roadmapVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([roadmapVersionId, orderIndex])
+  @@map("roadmap_milestones")
+}
+
+model Resource {
+  id          String   @id @default(uuid())
+  title       String
+  type        String
+  url         String
+  free        Boolean
+  skillTag    String   @map("skill_tag")
+  styleTags   String[] @map("style_tags")
+  estMinutes  Int?     @map("est_minutes")
+  embedding   Unsupported("vector(1536)")?
+
+  @@index([skillTag])
+  @@map("resources")
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  userId      String        @map("user_id")
+  title       String
+  difficulty  String
+  techStack   String[]      @map("tech_stack")
+  status      ProjectStatus @default(suggested)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  shippedAt   DateTime?     @map("shipped_at")
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("projects")
+}
+
+model Resume {
+  id        String          @id @default(uuid())
+  userId    String          @map("user_id")
+  fileUrl   String          @map("file_url")
+  createdAt DateTime        @default(now()) @map("created_at")
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis  ResumeAnalysis?
+
+  @@index([userId, createdAt])
+  @@map("resumes")
+}
+
+model ResumeAnalysis {
+  id              String   @id @default(uuid())
+  resumeId        String   @unique @map("resume_id")
+  score           Int
+  formattingScore Int      @map("formatting_score")
+  keywordScore    Int      @map("keyword_score")
+  grammarScore    Int      @map("grammar_score")
+  impactScore     Int      @map("impact_score")
+  missingSkills   String[] @map("missing_skills")
+  topFixes        String[] @map("top_fixes")
+  resume          Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("resume_analyses")
+}
+
+model GithubAnalysis {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  username  String
+  score     Int
+  languages Json
+  summary   String
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("github_analyses")
+}
+
+model Opportunity {
+  id          String             @id @default(uuid())
+  type        String
+  title       String
+  org         String
+  location    String
+  description String?
+  tags        String[]
+  isMockData  Boolean            @default(true) @map("is_mock_data")
+  embedding   Unsupported("vector(1536)")?
+  matches     OpportunityMatch[]
+
+  @@index([type, location])
+  @@map("opportunities")
+}
+
+model OpportunityMatch {
+  id            String      @id @default(uuid())
+  userId        String      @map("user_id")
+  opportunityId String      @map("opportunity_id")
+  why           String
+  reasoningRefs String[]    @map("reasoning_refs")
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, opportunityId])
+  @@map("opportunity_matches")
+}
+
+model InterviewSession {
+  id         String             @id @default(uuid())
+  userId     String             @map("user_id")
+  type       String
+  persona    String
+  difficulty String
+  transcript Json
+  createdAt  DateTime           @default(now()) @map("created_at")
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedback   InterviewFeedback?
+
+  @@index([userId, createdAt])
+  @@map("interview_sessions")
+}
+
+model InterviewFeedback {
+  id           String           @id @default(uuid())
+  sessionId    String           @unique @map("session_id")
+  score        Int
+  strengths    String[]
+  improvements String[]
+  session      InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("interview_feedback")
+}
+
+model CareerSimulation {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  targetRole     String   @map("target_role")
+  targetCompany  String?  @map("target_company")
+  timeline       Json
+  skillGaps      Json     @map("skill_gaps")
+  salaryBand     String   @map("salary_band")
+  successBand    String   @map("success_band")
+  scoringFactors Json     @map("scoring_factors")
+  createdAt      DateTime @default(now()) @map("created_at")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("career_simulations")
+}
+
+model CareerHealthScore {
+  id           String   @id @default(uuid())
+  userId       String   @unique @map("user_id")
+  score        Int
+  breakdown    Json
+  weeklyDelta  Int      @default(0) @map("weekly_delta")
+  lastComputed DateTime @default(now()) @map("last_computed")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("career_health_scores")
+}
+
+model ProgressSnapshot {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  snapshot  Json
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("progress_snapshots")
+}
+
+model Mission {
+  id          String             @id @default(uuid())
+  userId      String             @map("user_id")
+  goal        String
+  level       MissionLevel
+  progressPct Int                @map("progress_pct")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones  MissionMilestone[]
+
+  @@index([userId, updatedAt])
+  @@map("missions")
+}
+
+model MissionMilestone {
+  id          String                 @id @default(uuid())
+  missionId   String                 @map("mission_id")
+  title       String
+  weight      Int
+  status      RoadmapMilestoneStatus @default(upcoming)
+  completedAt DateTime?              @map("completed_at")
+  mission     Mission                @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@index([missionId, status])
+  @@map("mission_milestones")
+}
+
+model Achievement {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  badgeKey   String   @map("badge_key")
+  unlockedAt DateTime @default(now()) @map("unlocked_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeKey])
+  @@map("achievements")
+}
+
+model SharedAccess {
+  id            String       @id @default(uuid())
+  ownerUserId   String       @map("owner_user_id")
+  role          ObserverRole
+  inviteCode    String       @unique @map("invite_code")
+  granteeUserId String?      @map("grantee_user_id")
+  expiresAt     DateTime?    @map("expires_at")
+  revokedAt     DateTime?    @map("revoked_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  owner         User         @relation("SharedAccessOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  grantee       User?        @relation("SharedAccessGrantee", fields: [granteeUserId], references: [id], onDelete: SetNull)
+
+  @@index([ownerUserId, revokedAt])
+  @@index([granteeUserId, revokedAt])
+  @@map("shared_access")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+  @@map("notifications")
+}
