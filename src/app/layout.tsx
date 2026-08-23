@@ -36,6 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`dark ${geist.variable} ${geistMono.variable} ${fraunces.variable}`}
     >
       <body className="min-h-screen antialiased">

@@ -1,4 +1,13 @@
 import type { AgentOutput } from "@/lib/ai/schemas";
+import { generateCareerDiscovery } from "@/features/pathpilot/career-engine";
+import { retrieveLearningResources } from "@/features/pathpilot/learning-engine";
+import { generateRoadmap } from "@/features/pathpilot/roadmap-engine";
+import type {
+  CareerMatchResult,
+  DecisionRecord,
+  OnboardingProfile,
+  RoadmapPlan,
+} from "@/features/pathpilot/schemas";
 
 export interface ModuleExecutionContext {
   userId: string;
@@ -58,13 +67,53 @@ export function createPlaceholderModuleService<TInput, TResult>(moduleKey: Modul
   } satisfies PathPilotModuleService<TInput, TResult>;
 }
 
+export const implementedServices = {
+  careerDiscovery: {
+    execute(
+      input: { profile: OnboardingProfile; decisions?: DecisionRecord[] },
+    ) {
+      return generateCareerDiscovery(input.profile, input.decisions);
+    },
+  },
+  roadmapGenerator: {
+    execute(input: {
+      career: CareerMatchResult;
+      profile: OnboardingProfile;
+      decisions?: DecisionRecord[];
+      previous?: RoadmapPlan | null;
+    }) {
+      return generateRoadmap(input);
+    },
+  },
+  learningCoach: {
+    async execute(input: {
+      milestone: string;
+      skillTag: string;
+      learningStyle: OnboardingProfile["learningStyle"];
+    }) {
+      const result = await retrieveLearningResources(input);
+      return {
+        result,
+        reasoningRefs: ["roadmap.currentMilestone", "learningStyle"],
+        confidenceBand: result.mode === "ai" ? "high" : "medium",
+      } satisfies AgentOutput<typeof result>;
+    },
+  },
+  decisionMemory: {
+    async execute(input: DecisionRecord) {
+      return {
+        result: input,
+        reasoningRefs: ["decisionMemory"],
+        confidenceBand: "high",
+      } satisfies AgentOutput<DecisionRecord>;
+    },
+  },
+} as const;
+
 export const placeholderServices = {
-  careerDiscovery: createPlaceholderModuleService("careerDiscovery"),
   collegeFinder: createPlaceholderModuleService("collegeFinder"),
   examNavigator: createPlaceholderModuleService("examNavigator"),
   degreeAdvisor: createPlaceholderModuleService("degreeAdvisor"),
-  roadmapGenerator: createPlaceholderModuleService("roadmapGenerator"),
-  learningCoach: createPlaceholderModuleService("learningCoach"),
   projectMentor: createPlaceholderModuleService("projectMentor"),
   resumeAnalyzer: createPlaceholderModuleService("resumeAnalyzer"),
   githubAnalyzer: createPlaceholderModuleService("githubAnalyzer"),
@@ -77,7 +126,6 @@ export const placeholderServices = {
   opportunityRadar: createPlaceholderModuleService("opportunityRadar"),
   studentTimeline: createPlaceholderModuleService("studentTimeline"),
   futureTwin: createPlaceholderModuleService("futureTwin"),
-  decisionMemory: createPlaceholderModuleService("decisionMemory"),
   missionMode: createPlaceholderModuleService("missionMode"),
   parentAlignment: createPlaceholderModuleService("parentAlignment"),
   cohortCompass: createPlaceholderModuleService("cohortCompass"),
@@ -89,4 +137,4 @@ export const placeholderServices = {
   confidenceJournal: createPlaceholderModuleService("confidenceJournal"),
   dynamicInterviewPanel: createPlaceholderModuleService("dynamicInterviewPanel"),
   regretMinimizationReport: createPlaceholderModuleService("regretMinimizationReport"),
-} satisfies Record<ModuleServiceKey, PathPilotModuleService<unknown, unknown>>;
+} satisfies Partial<Record<ModuleServiceKey, PathPilotModuleService<unknown, unknown>>>;

@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
+import { useMutation } from "@tanstack/react-query";
 import {
+  ArrowRight,
   Bell,
   BookOpenCheck,
   Bot,
@@ -20,6 +22,7 @@ import {
   GraduationCap,
   HeartPulse,
   LayoutDashboard,
+  LoaderCircle,
   Map,
   MessageSquareText,
   MoreHorizontal,
@@ -38,8 +41,10 @@ import { useState } from "react";
 
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
+import { requestPathPilot } from "@/features/pathpilot/api-client";
 import { serviceAvailability } from "@/lib/env";
 import { cn } from "@/lib/utils";
+import { usePathPilotStore } from "@/stores/pathpilot-store";
 import { useUiStore } from "@/stores/ui-store";
 
 const navigationGroups = [
@@ -106,7 +111,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const toggleSidebar = useUiStore((state) => state.toggleSidebar);
   const [askOpen, setAskOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [previewMessage, setPreviewMessage] = useState<string | null>(null);
+  const [question, setQuestion] = useState("");
+  const profile = usePathPilotStore((state) => state.profile);
+  const decisions = usePathPilotStore((state) => state.decisions);
+  const askMutation = useMutation({
+    mutationFn: () =>
+      requestPathPilot<{
+        result: {
+          message: string;
+          links: Array<{ label: string; href: string }>;
+          agent: string;
+          mode: "ai" | "deterministic-fallback";
+        };
+      }>("/api/ask", {
+        method: "POST",
+        body: JSON.stringify({ question, profile, decisionMemory: decisions }),
+      }),
+  });
 
   function isActive(href: string) {
     return pathname === href || pathname.startsWith(`${href}/`);
@@ -217,11 +238,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
               <Button variant="ghost" size="icon" onClick={() => setAskOpen(false)} aria-label="Close Ask PathPilot"><X /></Button>
             </div>
-            <form className="mt-5" onSubmit={(event) => { event.preventDefault(); setPreviewMessage("The orchestrator adapter is scaffolded and will connect in Milestone 2."); }}>
+            <form className="mt-5" onSubmit={(event) => { event.preventDefault(); if (question.trim().length >= 3) askMutation.mutate(); }}>
               <label className="sr-only" htmlFor="ask-pathpilot">Your question</label>
-              <textarea id="ask-pathpilot" className="min-h-28 w-full resize-none rounded-lg border border-border bg-background p-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50" placeholder="Which career fits my interest in design and maths?" />
-              {previewMessage ? <p className="mt-3 rounded-md border border-primary/15 bg-primary/8 p-3 text-xs text-[#b8adff]">{previewMessage}</p> : null}
-              <div className="mt-4 flex justify-end"><Button type="submit"><Sparkles /> Ask</Button></div>
+              <textarea id="ask-pathpilot" value={question} onChange={(event) => setQuestion(event.target.value)} className="min-h-28 w-full resize-none rounded-lg border border-border bg-background p-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary/50" placeholder="Which career fits my interest in design and maths?" />
+              {askMutation.data ? <div className="mt-3 rounded-md border border-primary/15 bg-primary/8 p-3 text-xs leading-5 text-[#c4bbff]"><p>{askMutation.data.result.message}</p><div className="mt-3 flex flex-wrap gap-2">{askMutation.data.result.links.map((link) => <Button asChild size="sm" variant="ghost" key={link.href}><Link href={link.href} onClick={() => setAskOpen(false)}>{link.label} <ArrowRight /></Link></Button>)}</div></div> : null}
+              {askMutation.isError ? <p className="mt-3 rounded-md border border-destructive/20 bg-destructive/8 p-3 text-xs text-destructive">{askMutation.error.message}</p> : null}
+              <div className="mt-4 flex justify-end"><Button type="submit" disabled={askMutation.isPending || question.trim().length < 3}>{askMutation.isPending ? <><LoaderCircle className="animate-spin" /> Routing…</> : <><Sparkles /> Ask</>}</Button></div>
             </form>
           </div>
         </div>

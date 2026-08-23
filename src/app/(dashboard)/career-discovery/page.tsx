@@ -1,4 +1,5 @@
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
-import { getModuleBySlug } from "@/features/modules/registry";
+import { CareerDiscoveryScreen } from "@/components/career-discovery/career-discovery-screen";
 
-export default function Page() { return <ModulePlaceholder module={getModuleBySlug("career-discovery")!} />; }
+export default function Page() {
+  return <CareerDiscoveryScreen />;
+}

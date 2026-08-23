@@ -1,4 +1,5 @@
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
-import { getModuleBySlug } from "@/features/modules/registry";
+import { LearningCoachScreen } from "@/components/learning/learning-coach-screen";
 
-export default function Page() { return <ModulePlaceholder module={getModuleBySlug("learning")!} />; }
+export default function Page() {
+  return <LearningCoachScreen />;
+}

@@ -17,6 +17,8 @@ Verification gate: install, Drizzle migration validation/generation, lint, stric
 
 ## Milestone 2 — Core guidance loop
 
+Status: complete and browser-verified.
+
 - Six-step student onboarding with shared Zod schemas and saved draft state
 - Deterministic career taxonomy filtering followed by explained Career Strategist ranking
 - Decision Memory accept/reject/snooze actions and visible history

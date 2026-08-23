@@ -1,4 +1,5 @@
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
-import { getModuleBySlug } from "@/features/modules/registry";
+import { RoadmapScreen } from "@/components/roadmap/roadmap-screen";
 
-export default function Page() { return <ModulePlaceholder module={getModuleBySlug("roadmap")!} />; }
+export default function Page() {
+  return <RoadmapScreen />;
+}

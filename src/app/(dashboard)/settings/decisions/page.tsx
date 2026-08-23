@@ -1,5 +1,5 @@
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
+import { DecisionHistoryScreen } from "@/components/decisions/decision-history-screen";
 
 export default function Page() {
-  return <ModulePlaceholder module={{ slug: "settings/decisions", title: "Decision History", purpose: "Review and undo visible accept, reject, and snooze decisions.", stage: "mvp", status: "next", milestone: 2 }} />;
+  return <DecisionHistoryScreen />;
 }

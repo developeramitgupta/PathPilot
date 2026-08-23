@@ -1,5 +1,5 @@
 export type ModuleStage = "mvp" | "future";
-export type ModuleStatus = "foundation" | "next" | "planned";
+export type ModuleStatus = "foundation" | "available" | "next" | "planned";
 
 export interface ModuleDefinition {
   slug: string;
@@ -11,12 +11,12 @@ export interface ModuleDefinition {
 }
 
 export const moduleRegistry: ModuleDefinition[] = [
-  { slug: "career-discovery", title: "Career Discovery", purpose: "Rank explained career matches from the student profile.", stage: "mvp", status: "next", milestone: 2 },
+  { slug: "career-discovery", title: "Career Discovery", purpose: "Rank explained career matches from the student profile.", stage: "mvp", status: "available", milestone: 2 },
   { slug: "colleges", title: "Smart College Finder", purpose: "Rank colleges by constraints and personal fit.", stage: "mvp", status: "planned", milestone: 3 },
   { slug: "exams", title: "Entrance Exam Navigator", purpose: "Recommend the exams that actually serve a chosen goal.", stage: "mvp", status: "planned", milestone: 3 },
   { slug: "degrees", title: "Degree Advisor", purpose: "Compare degree paths on cost, duration, outcomes, and fit.", stage: "mvp", status: "planned", milestone: 3 },
-  { slug: "roadmap", title: "Career Roadmap", purpose: "Maintain a versioned, evolving milestone plan.", stage: "mvp", status: "next", milestone: 2 },
-  { slug: "learning", title: "Learning Coach", purpose: "Retrieve resources relevant to the current milestone.", stage: "mvp", status: "next", milestone: 2 },
+  { slug: "roadmap", title: "Career Roadmap", purpose: "Maintain a versioned, evolving milestone plan.", stage: "mvp", status: "available", milestone: 2 },
+  { slug: "learning", title: "Learning Coach", purpose: "Retrieve resources relevant to the current milestone.", stage: "mvp", status: "available", milestone: 2 },
   { slug: "projects", title: "Project Mentor", purpose: "Suggest portfolio projects sized to the student’s level.", stage: "mvp", status: "planned", milestone: 5 },
   { slug: "resume", title: "Resume Analyzer", purpose: "Prioritize deterministic and AI-assisted resume fixes.", stage: "mvp", status: "planned", milestone: 5 },
   { slug: "github", title: "GitHub Analyzer", purpose: "Measure what a public GitHub profile communicates.", stage: "mvp", status: "planned", milestone: 5 },
