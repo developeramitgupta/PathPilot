@@ -1,5 +1,5 @@
 -- PathPilot AI RLS baseline.
--- Apply after the Prisma schema migration has created the tables.
+-- Apply after the Drizzle schema migration has created the tables.
 -- Clerk user IDs are text. Never replace these checks with auth.uid().
 
 alter table if exists public.users enable row level security;

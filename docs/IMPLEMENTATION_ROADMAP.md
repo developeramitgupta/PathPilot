@@ -8,12 +8,12 @@ This roadmap is derived from the complete product specification. The MVP sequenc
 - Dark token system, Geist UI type, Fraunces editorial accent, responsive accessibility baseline
 - Polished public landing page and Clerk sign-in/sign-up surfaces
 - Credential-aware local preview mode so the project remains runnable before services are connected
-- Clerk middleware, Supabase Third-Party Auth client boundary, Prisma/Postgres schema, RLS migration scaffold
+- Clerk middleware, Supabase Third-Party Auth client boundary, Drizzle/Postgres schema, RLS migration scaffold
 - Responsive dashboard shell: 264px/72px desktop sidebar, sticky navbar, mobile bottom navigation
 - Reusable product components and route-level placeholders for every future module
 - LangGraph-ready agent output contract and specialist registry
 
-Verification gate: install, Prisma validation/generation, lint, strict typecheck, production build, desktop/mobile runtime smoke test.
+Verification gate: install, Drizzle migration validation/generation, lint, strict typecheck, production build, desktop/mobile runtime smoke test.
 
 ## Milestone 2 — Core guidance loop
 

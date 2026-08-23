@@ -1,6 +1,5 @@
 # dependencies
 node_modules/
-.pnpm-store/
 
 # Next.js
 .next/
@@ -19,9 +18,6 @@ build/
 coverage/
 playwright-report/
 test-results/
-
-# generated Prisma client
-src/generated/prisma/
 
 # local tooling
 .vercel/
