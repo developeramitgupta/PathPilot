@@ -28,6 +28,9 @@ interface PathPilotStore {
   careerDiscovery: CareerDiscoveryResult | null;
   decisions: DecisionRecord[];
   selectedCareerKey: string | null;
+  selectedCollegeId: string | null;
+  selectedExamId: string | null;
+  selectedDegreeKey: string | null;
   roadmap: RoadmapPlan | null;
   resourceProgress: Record<string, ResourceProgress>;
   setOnboardingDraft: (profile: OnboardingProfile) => void;
@@ -37,6 +40,7 @@ interface PathPilotStore {
   ) => void;
   setCareerDiscovery: (discovery: CareerDiscoveryResult) => void;
   setSelectedCareer: (careerKey: string) => void;
+  setEducationTarget: (type: "college" | "exam" | "degree", targetId: string) => void;
   recordDecision: (decision: DecisionRecord) => void;
   hydrateDecisions: (decisions: DecisionRecord[]) => void;
   undoDecision: (decisionId: string) => void;
@@ -53,6 +57,9 @@ export const usePathPilotStore = create<PathPilotStore>()(
       careerDiscovery: null,
       decisions: [],
       selectedCareerKey: null,
+      selectedCollegeId: null,
+      selectedExamId: null,
+      selectedDegreeKey: null,
       roadmap: null,
       resourceProgress: {},
       setOnboardingDraft: (onboardingDraft) => set({ onboardingDraft }),
@@ -65,6 +72,14 @@ export const usePathPilotStore = create<PathPilotStore>()(
         }),
       setCareerDiscovery: (careerDiscovery) => set({ careerDiscovery }),
       setSelectedCareer: (selectedCareerKey) => set({ selectedCareerKey }),
+      setEducationTarget: (type, targetId) =>
+        set(
+          type === "college"
+            ? { selectedCollegeId: targetId }
+            : type === "exam"
+              ? { selectedExamId: targetId }
+              : { selectedDegreeKey: targetId },
+        ),
       recordDecision: (decision) =>
         set((state) => ({
           decisions: [
@@ -155,6 +170,9 @@ export const usePathPilotStore = create<PathPilotStore>()(
         careerDiscovery: state.careerDiscovery,
         decisions: state.decisions,
         selectedCareerKey: state.selectedCareerKey,
+        selectedCollegeId: state.selectedCollegeId,
+        selectedExamId: state.selectedExamId,
+        selectedDegreeKey: state.selectedDegreeKey,
         roadmap: state.roadmap,
         resourceProgress: state.resourceProgress,
       }),

@@ -21,6 +21,9 @@ Status: complete and browser-verified.
 
 - Six-step student onboarding with shared Zod schemas and saved draft state
 - Deterministic career taxonomy filtering followed by explained Career Strategist ranking
+- Smart College Finder over a 300-entry India-wide demo dataset with hard constraints, explained ranking, grid/list results, and tabbed details
+- Entrance Exam Navigator with rule-based goal mapping, hybrid explanation, static tips, and permanently labeled mock dates
+- Degree Advisor with a reusable comparison table and personalized narrative over six static degree paths
 - Decision Memory accept/reject/snooze actions and visible history
 - Versioned Career Roadmap generation and refresh changelog
 - Learning Coach retrieval interface over seeded resources, pgvector-ready
@@ -28,9 +31,6 @@ Status: complete and browser-verified.
 
 ## Milestone 3 — Education decision suite
 
-- Smart College Finder with static India-relevant dataset and explained ranking
-- Entrance Exam Navigator with rule-based mapping; important dates always static and visibly labeled
-- Degree Advisor comparison model and personalized narrative
 - Student Timeline with deterministic stage deep links
 
 ## Milestone 4 — Flagship progress experience

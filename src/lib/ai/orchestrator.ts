@@ -48,7 +48,8 @@ const routingRules: Array<{
   href: string;
 }> = [
   { agent: "career-strategist", terms: ["career", "job", "role", "fit"], intent: "career guidance", href: "/career-discovery" },
-  { agent: "education-advisor", terms: ["degree", "course", "college", "stream"], intent: "education planning", href: "/degrees" },
+  { agent: "college-advisor", terms: ["college", "campus", "institute", "admission"], intent: "college planning", href: "/colleges" },
+  { agent: "education-advisor", terms: ["degree", "course", "stream", "btech", "bca", "diploma"], intent: "education planning", href: "/degrees" },
   { agent: "exam-planner", terms: ["exam", "jee", "neet", "cuet", "clat"], intent: "exam planning", href: "/exams" },
   { agent: "learning-coach", terms: ["learn", "skill", "resource", "roadmap", "study"], intent: "learning support", href: "/learning" },
   { agent: "project-mentor", terms: ["project", "portfolio", "build"], intent: "project planning", href: "/projects" },

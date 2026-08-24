@@ -1,10 +1,16 @@
 import type { AgentOutput } from "@/lib/ai/schemas";
 import { generateCareerDiscovery } from "@/features/pathpilot/career-engine";
+import { generateCollegeMatches } from "@/features/pathpilot/college-engine";
+import { compareDegrees } from "@/features/pathpilot/degree-engine";
+import { recommendExams } from "@/features/pathpilot/exam-engine";
 import { retrieveLearningResources } from "@/features/pathpilot/learning-engine";
 import { generateRoadmap } from "@/features/pathpilot/roadmap-engine";
 import type {
   CareerMatchResult,
+  CollegeFinderInput,
   DecisionRecord,
+  DegreeAdvisorInput,
+  ExamNavigatorInput,
   OnboardingProfile,
   RoadmapPlan,
 } from "@/features/pathpilot/schemas";
@@ -75,6 +81,21 @@ export const implementedServices = {
       return generateCareerDiscovery(input.profile, input.decisions);
     },
   },
+  collegeFinder: {
+    execute(input: CollegeFinderInput) {
+      return generateCollegeMatches(input);
+    },
+  },
+  examNavigator: {
+    execute(input: ExamNavigatorInput) {
+      return recommendExams(input);
+    },
+  },
+  degreeAdvisor: {
+    execute(input: DegreeAdvisorInput) {
+      return compareDegrees(input);
+    },
+  },
   roadmapGenerator: {
     execute(input: {
       career: CareerMatchResult;
@@ -111,9 +132,6 @@ export const implementedServices = {
 } as const;
 
 export const placeholderServices = {
-  collegeFinder: createPlaceholderModuleService("collegeFinder"),
-  examNavigator: createPlaceholderModuleService("examNavigator"),
-  degreeAdvisor: createPlaceholderModuleService("degreeAdvisor"),
   projectMentor: createPlaceholderModuleService("projectMentor"),
   resumeAnalyzer: createPlaceholderModuleService("resumeAnalyzer"),
   githubAnalyzer: createPlaceholderModuleService("githubAnalyzer"),

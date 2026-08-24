@@ -1,4 +1,5 @@
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
-import { getModuleBySlug } from "@/features/modules/registry";
+import { CollegeFinderScreen } from "@/components/colleges/college-finder-screen";
 
-export default function Page() { return <ModulePlaceholder module={getModuleBySlug("colleges")!} />; }
+export default function Page() {
+  return <CollegeFinderScreen />;
+}

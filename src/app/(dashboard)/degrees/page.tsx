@@ -1,4 +1,5 @@
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
-import { getModuleBySlug } from "@/features/modules/registry";
+import { DegreeAdvisorScreen } from "@/components/degrees/degree-advisor-screen";
 
-export default function Page() { return <ModulePlaceholder module={getModuleBySlug("degrees")!} />; }
+export default function Page() {
+  return <DegreeAdvisorScreen />;
+}

@@ -1,4 +1,5 @@
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
-import { getModuleBySlug } from "@/features/modules/registry";
+import { ExamNavigatorScreen } from "@/components/exams/exam-navigator-screen";
 
-export default function Page() { return <ModulePlaceholder module={getModuleBySlug("exams")!} />; }
+export default function Page() {
+  return <ExamNavigatorScreen />;
+}
