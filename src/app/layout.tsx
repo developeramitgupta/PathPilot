@@ -36,8 +36,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       lang="en"
       data-scroll-behavior="smooth"
       className={`dark ${geist.variable} ${geistMono.variable} ${fraunces.variable}`}
+      suppressHydrationWarning
     >
-      <body className="min-h-screen antialiased">
+      <body className="min-h-screen antialiased" suppressHydrationWarning>
         {clerkKey ? (
           <ClerkProvider publishableKey={clerkKey}>{children}</ClerkProvider>
         ) : (
