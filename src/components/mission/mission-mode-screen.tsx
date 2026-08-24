@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import {
   ArrowRight,
   Check,
@@ -123,7 +123,8 @@ export function MissionModeScreen() {
     .reduce((total, item) => total + item.weight, 0);
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto max-w-7xl">
       <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
           <div className="flex flex-wrap items-center gap-2"><Badge><Flag className="size-3" /> Mission Mode</Badge><Badge variant="success">Deterministic progress</Badge>{missionState ? null : <Badge variant="demo">Preview mission</Badge>}</div>
@@ -208,6 +209,7 @@ export function MissionModeScreen() {
         </div>
       </div>
       {syncMutation.isError ? <p className="mt-5 text-xs text-warning" role="status">Saved on this device. Cloud sync will retry when the database connection is available.</p> : null}
-    </div>
+      </div>
+    </MotionConfig>
   );
 }

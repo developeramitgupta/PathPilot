@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import {
   ArrowRight,
   BookmarkCheck,
@@ -90,7 +90,7 @@ function CareerCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.28 }}
       className={cn(
-        "rounded-xl border border-border bg-card/78 p-5 shadow-[var(--shadow-card)] backdrop-blur-xl",
+        "render-lazy rounded-xl border border-border bg-card/78 p-5 shadow-[var(--shadow-card)] backdrop-blur-xl",
         decision?.action === "rejected" && "border-destructive/20 opacity-72",
       )}
     >
@@ -208,7 +208,8 @@ export function CareerDiscoveryScreen() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto max-w-6xl">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2"><Badge><Sparkles className="size-3" /> Career Strategist</Badge>{discovery ? <Badge variant={discovery.mode === "ai" ? "success" : "demo"}>{discovery.mode === "ai" ? "AI-ranked" : "Deterministic fallback"}</Badge> : null}</div>
@@ -265,6 +266,7 @@ export function CareerDiscoveryScreen() {
           </div>
         ) : null}
       </Modal>
-    </div>
+      </div>
+    </MotionConfig>
   );
 }

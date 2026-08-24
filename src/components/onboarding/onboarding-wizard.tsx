@@ -98,7 +98,7 @@ function ChoiceGrid({
                 )
               }
             >
-              {active ? <Check className="mr-1.5 inline size-3.5" /> : null}
+              {active ? <Check className="mr-1.5 inline size-3.5" aria-hidden="true" /> : null}
               {option}
             </button>
           );
@@ -208,7 +208,10 @@ export function OnboardingWizard() {
     setShowValidation(false);
     if (step < steps.length - 1) {
       setStep((current) => current + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({
+        top: 0,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
     } else {
       completeMutation.mutate();
     }
@@ -236,20 +239,21 @@ export function OnboardingWizard() {
               </div>
               <div className="font-display text-3xl font-semibold lg:mt-5">{Math.round(((step + 1) / steps.length) * 100)}%</div>
             </div>
-            <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/6"><div className="h-full rounded-full signature-gradient transition-[width] duration-300" style={{ width: `${((step + 1) / steps.length) * 100}%` }} /></div>
+            <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/6" role="progressbar" aria-label="Onboarding progress" aria-valuemin={1} aria-valuemax={steps.length} aria-valuenow={step + 1}><div className="h-full rounded-full signature-gradient transition-[width] duration-300" style={{ width: `${((step + 1) / steps.length) * 100}%` }} /></div>
             <ol className="mt-6 hidden gap-2 lg:grid">
               {steps.map((item, index) => (
                 <li key={item.title}>
                   <button
                     type="button"
                     disabled={index > step}
+                    aria-current={index === step ? "step" : undefined}
                     onClick={() => setStep(index)}
                     className={cn(
                       "flex min-h-10 w-full items-center gap-3 rounded-lg px-2 text-left text-sm text-muted-foreground disabled:cursor-not-allowed disabled:opacity-55",
                       index === step && "bg-primary/10 text-foreground",
                     )}
                   >
-                    <span className={cn("grid size-7 shrink-0 place-items-center rounded-full border border-border font-data text-[10px]", index < step && "border-success/30 bg-success/10 text-success", index === step && "border-primary/40 bg-primary text-white")}>{index < step ? <Check className="size-3.5" /> : index + 1}</span>
+                    <span className={cn("grid size-7 shrink-0 place-items-center rounded-full border border-border font-data text-[10px]", index < step && "border-success/30 bg-success/10 text-success", index === step && "border-primary/40 bg-primary text-white")}>{index < step ? <Check className="size-3.5" aria-hidden="true" /> : index + 1}</span>
                     {item.title}
                   </button>
                 </li>
@@ -293,9 +297,9 @@ export function OnboardingWizard() {
                 <div className="grid gap-7">
                   <div className="grid gap-5 sm:grid-cols-2">
                     {workStyleItems.map((item) => (
-                      <label className="rounded-lg border border-border bg-background/35 p-4" key={item.key}>
+                      <label htmlFor={`work-style-${item.key}`} className="rounded-lg border border-border bg-background/35 p-4" key={item.key}>
                         <span className="flex items-center justify-between gap-3 text-sm font-medium"><span>{item.label}</span><span className="font-data text-xs text-[#b5aaff]">{profile.workStyle[item.key]}/5</span></span>
-                        <input className="mt-4 w-full accent-[#7c5cfc]" type="range" min="1" max="5" step="1" value={profile.workStyle[item.key]} onChange={(event) => update("workStyle", { ...profile.workStyle, [item.key]: Number(event.target.value) })} />
+                        <input id={`work-style-${item.key}`} className="mt-4 w-full accent-[#7c5cfc]" type="range" min="1" max="5" step="1" value={profile.workStyle[item.key]} aria-valuetext={`${profile.workStyle[item.key]} out of 5; ${item.low} to ${item.high}`} onChange={(event) => update("workStyle", { ...profile.workStyle, [item.key]: Number(event.target.value) })} />
                         <span className="mt-2 flex justify-between text-[10px] text-muted-foreground"><span>{item.low}</span><span>{item.high}</span></span>
                       </label>
                     ))}
@@ -312,9 +316,9 @@ export function OnboardingWizard() {
                   <SegmentedChoice label="Study budget" value={profile.studyBudget} onChange={(value) => update("studyBudget", value)} options={[{ value: "low", label: "Cost-sensitive" }, { value: "medium", label: "Moderate" }, { value: "high", label: "Flexible" }]} />
                   <SegmentedChoice label="Location preference" value={profile.locationPref} onChange={(value) => update("locationPref", value)} options={[{ value: "home-city", label: "Stay near home" }, { value: "anywhere-india", label: "Anywhere in India" }, { value: "remote", label: "Remote-friendly" }, { value: "global", label: "Open to global" }]} />
                   <SegmentedChoice label="Illustrative entry salary goal" value={profile.salaryExpectation} onChange={(value) => update("salaryExpectation", value)} options={[{ value: "3-6L", label: "₹3-6L" }, { value: "6-12L", label: "₹6-12L" }, { value: "12-20L", label: "₹12-20L" }, { value: "20L+", label: "₹20L+" }]} />
-                  <label className="rounded-lg border border-border bg-background/35 p-4">
+                  <label htmlFor="higher-studies-lean" className="rounded-lg border border-border bg-background/35 p-4">
                     <span className="flex items-center justify-between gap-3 text-sm font-medium"><span>Higher studies vs. job</span><span className="font-data text-xs text-[#b5aaff]">{profile.higherStudiesLean}% higher studies</span></span>
-                    <input className="mt-4 w-full accent-[#7c5cfc]" type="range" min="0" max="100" step="5" value={profile.higherStudiesLean} onChange={(event) => update("higherStudiesLean", Number(event.target.value))} />
+                    <input id="higher-studies-lean" className="mt-4 w-full accent-[#7c5cfc]" type="range" min="0" max="100" step="5" value={profile.higherStudiesLean} aria-valuetext={`${profile.higherStudiesLean}% higher studies`} onChange={(event) => update("higherStudiesLean", Number(event.target.value))} />
                     <span className="mt-2 flex justify-between text-[10px] text-muted-foreground"><span>Start working sooner</span><span>Study further first</span></span>
                   </label>
                 </div>
@@ -341,7 +345,7 @@ export function OnboardingWizard() {
                 </div>
               ) : null}
 
-              {showValidation ? <p className="mt-6 rounded-lg border border-warning/25 bg-warning/8 p-3 text-sm text-warning">Complete the required choices on this step before continuing.</p> : null}
+              {showValidation ? <p className="mt-6 rounded-lg border border-warning/25 bg-warning/8 p-3 text-sm text-warning" role="alert">Complete the required choices on this step before continuing.</p> : null}
               {completeMutation.isError ? <div className="mt-6"><ErrorBanner message={completeMutation.error.message} onRetry={() => completeMutation.mutate()} /></div> : null}
 
               <div className="mt-9 hidden items-center justify-between border-t border-border pt-6 md:flex">

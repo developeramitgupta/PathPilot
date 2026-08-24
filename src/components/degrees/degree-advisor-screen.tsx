@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import { ArrowRight, Check, Clock3, GraduationCap, IndianRupee, Sparkles, TrendingUp } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 
@@ -55,7 +55,8 @@ export function DegreeAdvisorScreen() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto max-w-7xl">
       <EducationHero icon={GraduationCap} eyebrow="Education Advisor" title="Compare degree paths on the same evidence" description="See cost, time, flexibility, outcomes, and career alignment together—then get a recommendation grounded in the shortlist you actually care about." mode={result ? (result.mode === "ai" ? "AI-personalized" : "Deterministic fallback") : undefined} />
       <Card className="mt-7 p-5 sm:p-6">
         <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
@@ -85,6 +86,7 @@ export function DegreeAdvisorScreen() {
           <div className="mt-7 grid gap-4 lg:grid-cols-2">{result.comparisons.map((degree) => <Card className="p-5" key={`${degree.degreeKey}-analysis`}><div className="flex items-center justify-between gap-3"><h3 className="font-semibold">{degree.degreeType}</h3><Badge>{degree.fitScore}% fit</Badge></div><p className="mt-3 text-sm leading-6 text-muted-foreground">{degree.roiNote}</p><div className="mt-4 grid gap-2 sm:grid-cols-2"><div><p className="text-xs font-semibold text-success">Works well because</p><ul className="mt-2 grid gap-1.5">{degree.pros.map((pro) => <li className="flex gap-2 text-xs text-muted-foreground" key={pro}><Check className="size-3.5 shrink-0 text-success" />{pro}</li>)}</ul></div><div><p className="text-xs font-semibold text-warning">Watch for</p><ul className="mt-2 grid gap-1.5">{degree.cons.map((con) => <li className="text-xs text-muted-foreground" key={con}>• {con}</li>)}</ul></div></div></Card>)}</div>
         </div> : <Card className="grid min-h-[380px] place-items-center p-8 text-center"><div className="max-w-md"><GraduationCap className="mx-auto size-10 text-[#a998ff]" /><h2 className="mt-5 text-xl font-semibold">Compare the route, not just the label</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">PathPilot will score BTech, BCA, BSc, Diploma, Integrated, and Online degree routes against your careers, budget, and preferred pace.</p></div></Card>}
       </section>
-    </div>
+      </div>
+    </MotionConfig>
   );
 }

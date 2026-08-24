@@ -1,5 +1,6 @@
 import { CollegeFinderScreen } from "@/components/colleges/college-finder-screen";
+import { QueryBoundary } from "@/components/shared/query-boundary";
 
 export default function Page() {
-  return <CollegeFinderScreen />;
+  return <QueryBoundary><CollegeFinderScreen /></QueryBoundary>;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import { Building2, Check, Grid2X2, List, MapPin, Search, Sparkles, WalletCards } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 
@@ -34,7 +34,7 @@ function formatCurrency(value: number) {
 }
 function CollegeCard({ college, index, layout, selected, onOpen, onSelect }: { college: CollegeMatchResult; index: number; layout: "grid" | "list"; selected: boolean; onOpen: () => void; onSelect: () => void }) {
   return (
-    <motion.article initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }} className={cn("rounded-xl border bg-card/78 p-5 shadow-[var(--shadow-card)]", selected ? "border-success/35" : "border-border", layout === "list" && "lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-5")}>
+    <motion.article initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }} className={cn("render-lazy rounded-xl border bg-card/78 p-5 shadow-[var(--shadow-card)]", selected ? "border-success/35" : "border-border", layout === "list" && "lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-5")}>
       <ProgressRing value={college.compatibility} label="fit" size="sm" />
       <div className={cn("min-w-0", layout === "grid" ? "mt-4" : "mt-4 lg:mt-0")}>
         <div className="flex flex-wrap gap-2"><Badge variant="demo">Tier {college.tier} · demo</Badge><Badge variant={college.ownership === "government" ? "success" : "default"}>{college.ownership}</Badge>{selected ? <Badge variant="success"><Check className="size-3" /> Shortlisted</Badge> : null}</div>
@@ -70,7 +70,8 @@ export function CollegeFinderScreen() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto max-w-7xl">
       <EducationHero icon={Building2} eyebrow="College Advisor" title="Find colleges that fit your reality" description="Hard-filter 300 India-wide demo colleges by budget, location, and branch, then rank the strongest options against your softer priorities." mode={result ? (result.mode === "ai" ? "AI-ranked" : "Deterministic fallback") : undefined} />
       <div className="mt-5 rounded-lg border border-warning/20 bg-warning/6 p-3 text-xs leading-5 text-[#ead58f]">Cutoffs and placement figures are demo data, not live admissions data. Always verify details with the institution and official counselling authority.</div>
 
@@ -103,8 +104,9 @@ export function CollegeFinderScreen() {
       </div>
 
       <Modal open={Boolean(detail)} onOpenChange={(open) => { if (!open) setDetail(null); }} title={detail?.name ?? "College detail"} description={detail ? `${detail.city}, ${detail.state} · ${detail.ownership}` : undefined} className="max-w-3xl">
-        {detail ? <div><div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="College details">{(["overview", "cutoffs", "placements", "culture"] as const).map((tab) => <Button size="sm" variant={detailTab === tab ? "secondary" : "ghost"} role="tab" aria-selected={detailTab === tab} key={tab} onClick={() => setDetailTab(tab)} className="capitalize">{tab}</Button>)}</div><div className="mt-5 min-h-44">{detailTab === "overview" ? <div><p className="text-sm leading-6 text-muted-foreground">{detail.overview}</p><div className="mt-4 flex flex-wrap gap-2">{detail.branches.map((branch) => <Badge key={branch}>{branch}</Badge>)}</div></div> : detailTab === "cutoffs" ? <div><p className="font-data text-3xl font-semibold">{detail.boardCutoffDemo}%</p><p className="mt-2 text-sm text-muted-foreground">Illustrative board cutoff proxy. Actual program cutoffs vary by exam, category, quota, branch, and counselling round.</p></div> : detailTab === "placements" ? <div className="grid gap-3 sm:grid-cols-2"><Card className="p-4"><p className="text-xs text-muted-foreground">Placement rate · demo</p><p className="mt-2 font-data text-2xl">{detail.placementRateDemo}%</p></Card><Card className="p-4"><p className="text-xs text-muted-foreground">Median package · demo</p><p className="mt-2 font-data text-2xl">{detail.medianPackageDemo}</p></Card></div> : <div><p className="text-sm text-muted-foreground">Signals included in this demo profile:</p><div className="mt-3 flex flex-wrap gap-2">{detail.cultureTags.map((tag) => <Badge key={tag}>{tag.replaceAll("-", " ")}</Badge>)}<Badge variant="outline">{detail.hostelAvailable ? "Hostel available" : "No hostel in demo data"}</Badge><Badge variant="outline">{detail.scholarshipAvailable ? "Scholarship signal" : "No scholarship signal"}</Badge></div></div>}</div><ReasoningRefs refs={detail.reasoningRefs} /><div className="mt-6 flex justify-end"><Button onClick={() => shortlist(detail)}>{selectedCollegeId === detail.collegeId ? <Check /> : null}{selectedCollegeId === detail.collegeId ? "Shortlisted" : "Add to shortlist"}</Button></div></div> : null}
+        {detail ? <div><div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="College detail sections">{(["overview", "cutoffs", "placements", "culture"] as const).map((tab) => <Button size="sm" variant={detailTab === tab ? "secondary" : "ghost"} aria-pressed={detailTab === tab} key={tab} onClick={() => setDetailTab(tab)} className="capitalize">{tab}</Button>)}</div><div className="mt-5 min-h-44">{detailTab === "overview" ? <div><p className="text-sm leading-6 text-muted-foreground">{detail.overview}</p><div className="mt-4 flex flex-wrap gap-2">{detail.branches.map((branch) => <Badge key={branch}>{branch}</Badge>)}</div></div> : detailTab === "cutoffs" ? <div><p className="font-data text-3xl font-semibold">{detail.boardCutoffDemo}%</p><p className="mt-2 text-sm text-muted-foreground">Illustrative board cutoff proxy. Actual program cutoffs vary by exam, category, quota, branch, and counselling round.</p></div> : detailTab === "placements" ? <div className="grid gap-3 sm:grid-cols-2"><Card className="p-4"><p className="text-xs text-muted-foreground">Placement rate · demo</p><p className="mt-2 font-data text-2xl">{detail.placementRateDemo}%</p></Card><Card className="p-4"><p className="text-xs text-muted-foreground">Median package · demo</p><p className="mt-2 font-data text-2xl">{detail.medianPackageDemo}</p></Card></div> : <div><p className="text-sm text-muted-foreground">Signals included in this demo profile:</p><div className="mt-3 flex flex-wrap gap-2">{detail.cultureTags.map((tag) => <Badge key={tag}>{tag.replaceAll("-", " ")}</Badge>)}<Badge variant="outline">{detail.hostelAvailable ? "Hostel available" : "No hostel in demo data"}</Badge><Badge variant="outline">{detail.scholarshipAvailable ? "Scholarship signal" : "No scholarship signal"}</Badge></div></div>}</div><ReasoningRefs refs={detail.reasoningRefs} /><div className="mt-6 flex justify-end"><Button onClick={() => shortlist(detail)}>{selectedCollegeId === detail.collegeId ? <Check /> : null}{selectedCollegeId === detail.collegeId ? "Shortlisted" : "Add to shortlist"}</Button></div></div> : null}
       </Modal>
-    </div>
+      </div>
+    </MotionConfig>
   );
 }

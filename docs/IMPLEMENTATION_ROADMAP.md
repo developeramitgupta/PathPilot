@@ -73,3 +73,5 @@ Status: complete and browser-verified.
 - v1.2: Hindi/regional languages, GitHub OAuth, live Places data
 - v2.0: trust-and-safety-reviewed human mentor marketplace, school cohort dashboard, native app
 - v2.1: WhatsApp access and offline-first PWA
+
+The feature-level release backlog is maintained in [`PRD_TODO.md`](./PRD_TODO.md).

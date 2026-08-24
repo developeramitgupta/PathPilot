@@ -1,4 +1,3 @@
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
-import { getModuleBySlug } from "@/features/modules/registry";
+import { PlannedModulePage } from "@/components/modules/module-placeholder";
 
-export default function Page() { return <ModulePlaceholder module={getModuleBySlug("future-twin")!} />; }
+export default function Page() { return <PlannedModulePage slug="future-twin" />; }

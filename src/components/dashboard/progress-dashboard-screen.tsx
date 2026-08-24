@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   BookOpenCheck,
@@ -22,11 +23,12 @@ import {
   LevelBadge,
   TrendSparkline,
 } from "@/components/shared/dashboard-visuals";
+import { ErrorBanner } from "@/components/shared/feedback-states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { rankRadarOpportunities } from "@/features/pathpilot/radar-engine";
-import type { ProgressDimension } from "@/features/pathpilot/schemas";
+import { requestPathPilot } from "@/features/pathpilot/api-client";
+import type { ProgressDimension, RadarResult } from "@/features/pathpilot/schemas";
 import { usePathPilotProgressModel } from "@/features/pathpilot/use-progress-model";
 
 const statIcons = {
@@ -86,15 +88,22 @@ export function ProgressDashboardScreen() {
   const featuredDimensions = progress.dimensions.filter((dimension) =>
     ["skills", "projects", "resume", "github"].includes(dimension.key),
   );
-  const radarPreview = rankRadarOpportunities({
-    profile,
-    careerName: career?.careerName,
-    starterSkills: career?.starterSkills,
-  }).opportunities.slice(0, 3);
+  const radarParams = new URLSearchParams({
+    career: career?.careerName ?? "",
+    interests: profile.interests.join(","),
+    skills: career?.starterSkills.join(",") ?? "",
+  });
+  const radarQuery = useQuery({
+    queryKey: ["opportunity-radar", career?.careerKey, profile.interests.join("|")],
+    queryFn: () => requestPathPilot<{ result: RadarResult }>(`/api/radar?${radarParams.toString()}`),
+    staleTime: 1000 * 60 * 10,
+  });
+  const radarPreview = radarQuery.data?.result.opportunities.slice(0, 3) ?? [];
   const nextRoadmap = roadmap?.milestones.find((item) => item.status === "active") ?? roadmap?.milestones[0];
 
   return (
-    <div>
+    <MotionConfig reducedMotion="user">
+      <div>
       <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -147,6 +156,9 @@ export function ProgressDashboardScreen() {
         <Card className="min-w-0 p-6">
           <div className="flex items-center justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Opportunity Radar</p><h2 className="mt-2 text-lg font-semibold">Patterns worth watching</h2></div><Radar className="size-5 text-[#a998ff]" /></div>
           <div className="mt-5 divide-y divide-border">
+            {radarQuery.isPending ? Array.from({ length: 3 }, (_, index) => <div key={index} className="flex min-h-16 items-center gap-3 py-3" aria-hidden="true"><span className="skeleton-shimmer size-7 rounded-full" /><span className="flex-1"><span className="skeleton-shimmer block h-3 w-3/4 rounded" /><span className="skeleton-shimmer mt-2 block h-2 w-1/2 rounded" /></span></div>) : null}
+            {radarQuery.isError ? <div className="py-3"><ErrorBanner message="Opportunity preview is temporarily unavailable." onRetry={() => radarQuery.refetch()} /></div> : null}
+            {radarQuery.isSuccess && radarPreview.length === 0 ? <p className="py-6 text-center text-xs text-muted-foreground">No opportunity patterns are available for this profile yet.</p> : null}
             {radarPreview.map((item, index) => (
               <Link href="/radar" className="flex min-h-16 items-center gap-3 py-3" key={item.id}>
                 <span className="grid size-7 place-items-center rounded-full border border-border font-data text-[10px] text-muted-foreground">0{index + 1}</span>
@@ -178,6 +190,7 @@ export function ProgressDashboardScreen() {
           </div>
         </div>
       </Card>
-    </div>
+      </div>
+    </MotionConfig>
   );
 }

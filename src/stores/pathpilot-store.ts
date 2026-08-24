@@ -4,7 +4,6 @@ import { create } from "zustand";
 import {
   createJSONStorage,
   persist,
-  type StateStorage,
 } from "zustand/middleware";
 
 import type {
@@ -15,14 +14,9 @@ import type {
   OpportunityAction,
   RoadmapPlan,
 } from "@/features/pathpilot/schemas";
+import { getSafeBrowserStorage } from "@/lib/safe-storage";
 
 export type ResourceProgress = "saved" | "started" | "done";
-
-const serverStorage: StateStorage = {
-  getItem: () => null,
-  setItem: () => undefined,
-  removeItem: () => undefined,
-};
 
 interface PathPilotStore {
   onboardingDraft: OnboardingProfile | null;
@@ -56,6 +50,7 @@ interface PathPilotStore {
     opportunityId: string,
     action: OpportunityAction | null,
   ) => void;
+  restoreDismissedOpportunities: () => void;
 }
 
 export const usePathPilotStore = create<PathPilotStore>()(
@@ -179,13 +174,17 @@ export const usePathPilotStore = create<PathPilotStore>()(
                 ),
               ),
         })),
+      restoreDismissedOpportunities: () =>
+        set((state) => ({
+          opportunityActions: Object.fromEntries(
+            Object.entries(state.opportunityActions).filter(([, action]) => action !== "dismissed"),
+          ),
+        })),
     }),
     {
       name: "pathpilot-core-loop-v1",
       version: 1,
-      storage: createJSONStorage(() =>
-        typeof window === "undefined" ? serverStorage : window.localStorage,
-      ),
+      storage: createJSONStorage(getSafeBrowserStorage),
       partialize: (state) => ({
         onboardingDraft: state.onboardingDraft,
         profile: state.profile,

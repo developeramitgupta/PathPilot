@@ -1,5 +1,6 @@
 import { MissionModeScreen } from "@/components/mission/mission-mode-screen";
+import { QueryBoundary } from "@/components/shared/query-boundary";
 
 export default function Page() {
-  return <MissionModeScreen />;
+  return <QueryBoundary><MissionModeScreen /></QueryBoundary>;
 }

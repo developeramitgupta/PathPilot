@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, MotionConfig, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
@@ -92,7 +92,9 @@ export function LandingPage() {
     : { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const };
 
   return (
-    <main className="overflow-hidden">
+    <MotionConfig reducedMotion="user">
+      <main className="overflow-hidden">
+      <a href="#landing-content" className="skip-link">Skip to main content</a>
       <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[760px] grid-fade" />
 
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-background/75 backdrop-blur-xl">
@@ -155,7 +157,7 @@ export function LandingPage() {
         ) : null}
       </header>
 
-      <section className="relative mx-auto grid min-h-[760px] max-w-7xl items-center gap-14 px-4 pb-20 pt-32 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:px-8 lg:pt-28">
+      <section id="landing-content" tabIndex={-1} className="relative mx-auto grid min-h-[760px] max-w-7xl items-center gap-14 px-4 pb-20 pt-32 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:px-8 lg:pt-28">
         <motion.div
           initial={{ opacity: 0, y: reduceMotion ? 0 : 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -330,6 +332,7 @@ export function LandingPage() {
           <p className="max-w-xl text-xs leading-5 text-muted-foreground">PathPilot uses AI to provide guidance, not guarantees. Important education and career decisions should also involve a trusted parent, counselor, or qualified professional.</p>
         </div>
       </footer>
-    </main>
+      </main>
+    </MotionConfig>
   );
 }

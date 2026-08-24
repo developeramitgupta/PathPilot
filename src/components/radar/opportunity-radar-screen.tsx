@@ -2,7 +2,7 @@
 
 import { useDeferredValue, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig, useReducedMotion } from "framer-motion";
 import {
   Bookmark,
   BookmarkCheck,
@@ -111,6 +111,7 @@ export function OpportunityRadarScreen() {
   const discovery = usePathPilotStore((state) => state.careerDiscovery);
   const selectedCareerKey = usePathPilotStore((state) => state.selectedCareerKey);
   const opportunityActions = usePathPilotStore((state) => state.opportunityActions);
+  const restoreDismissedOpportunities = usePathPilotStore((state) => state.restoreDismissedOpportunities);
   const profile = profileState ?? defaultOnboardingProfile;
   const career = discovery?.matches.find((item) => item.careerKey === selectedCareerKey) ?? discovery?.matches[0];
   const [category, setCategory] = useState<OpportunityCategory | "all">("all");
@@ -138,7 +139,8 @@ export function OpportunityRadarScreen() {
   const savedCount = Object.values(opportunityActions).filter((action) => action === "saved").length;
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto max-w-7xl">
       <Card className="relative overflow-hidden p-6 sm:p-8">
         <div className="pointer-events-none absolute inset-0 grid-fade opacity-35" />
         <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_260px]">
@@ -168,8 +170,9 @@ export function OpportunityRadarScreen() {
 
       {radarQuery.isPending ? <div className="mt-6"><LoadingSkeleton variant="cards" /></div> : null}
       {radarQuery.isError ? <div className="mt-6"><ErrorBanner message={radarQuery.error.message} onRetry={() => radarQuery.refetch()} /></div> : null}
-      {radarQuery.isSuccess && opportunities.length === 0 ? <Card className="mt-6 grid min-h-64 place-items-center p-6 text-center"><div><Search className="mx-auto size-6 text-muted-foreground" /><h2 className="mt-4 text-lg font-semibold">No visible patterns match these filters</h2><p className="mt-2 text-xs text-muted-foreground">Clear the search or switch categories. Dismissed items stay hidden on this device.</p><Button className="mt-5" variant="secondary" onClick={() => { setSearch(""); setCategory("all"); }}>Clear filters</Button></div></Card> : null}
+      {radarQuery.isSuccess && opportunities.length === 0 ? <Card className="mt-6 grid min-h-64 place-items-center p-6 text-center"><div><Search className="mx-auto size-6 text-muted-foreground" aria-hidden="true" /><h2 className="mt-4 text-lg font-semibold">No visible patterns match these filters</h2><p className="mt-2 text-xs text-muted-foreground">Search, category choices, and dismissed cards can all narrow this view.</p><Button className="mt-5" variant="secondary" onClick={() => { setSearch(""); setCategory("all"); restoreDismissedOpportunities(); }}>Show all patterns</Button></div></Card> : null}
       {opportunities.length ? <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{opportunities.map((item, index) => <OpportunityCard key={item.id} item={item} index={index} expanded={expandedId === item.id} onExpand={() => setExpandedId((value) => value === item.id ? null : item.id)} />)}</div> : null}
-    </div>
+      </div>
+    </MotionConfig>
   );
 }

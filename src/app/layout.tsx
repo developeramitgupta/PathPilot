@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 
 import { fraunces, geist, geistMono } from "@/lib/fonts";
-import { AppProviders } from "@/app/providers";
 
 import "./globals.css";
 
@@ -30,7 +29,6 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const content = <AppProviders>{children}</AppProviders>;
   const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   return (
@@ -41,9 +39,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     >
       <body className="min-h-screen antialiased">
         {clerkKey ? (
-          <ClerkProvider publishableKey={clerkKey}>{content}</ClerkProvider>
+          <ClerkProvider publishableKey={clerkKey}>{children}</ClerkProvider>
         ) : (
-          content
+          children
         )}
       </body>
     </html>

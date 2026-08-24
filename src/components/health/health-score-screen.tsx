@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import {
   ArrowRight,
   BrainCircuit,
@@ -31,7 +31,8 @@ export function HealthScoreScreen() {
   const demoCount = health.categories.filter((category) => category.evidenceMode === "demo").length;
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto max-w-7xl">
       <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div>
           <div className="flex flex-wrap items-center gap-2"><Badge><CircleGauge className="size-3" /> Career Health Score</Badge><Badge variant="success">Formula-driven</Badge><Badge variant="demo">{demoCount} demo evidence sources</Badge></div>
@@ -90,6 +91,7 @@ export function HealthScoreScreen() {
           </div>
         </div>
       </Card>
-    </div>
+      </div>
+    </MotionConfig>
   );
 }
