@@ -1,4 +1,5 @@
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
-import { getModuleBySlug } from "@/features/modules/registry";
+import { HealthScoreScreen } from "@/components/health/health-score-screen";
 
-export default function Page() { return <ModulePlaceholder module={getModuleBySlug("health-score")!} />; }
+export default function Page() {
+  return <HealthScoreScreen />;
+}

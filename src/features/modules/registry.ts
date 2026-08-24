@@ -11,6 +11,7 @@ export interface ModuleDefinition {
 }
 
 export const moduleRegistry: ModuleDefinition[] = [
+  { slug: "dashboard", title: "Progress Dashboard", purpose: "Aggregate readiness, activity, and next actions in one home screen.", stage: "mvp", status: "available", milestone: 3 },
   { slug: "career-discovery", title: "Career Discovery", purpose: "Rank explained career matches from the student profile.", stage: "mvp", status: "available", milestone: 2 },
   { slug: "colleges", title: "Smart College Finder", purpose: "Rank colleges by constraints and personal fit.", stage: "mvp", status: "available", milestone: 2 },
   { slug: "exams", title: "Entrance Exam Navigator", purpose: "Recommend the exams that actually serve a chosen goal.", stage: "mvp", status: "available", milestone: 2 },
@@ -26,12 +27,12 @@ export const moduleRegistry: ModuleDefinition[] = [
   { slug: "what-if", title: "What-If Simulator", purpose: "Compare two or three paths using auditable formulas.", stage: "mvp", status: "planned", milestone: 6 },
   { slug: "future-twin", title: "AI Future Twin", purpose: "Show clearly framed 2, 5, and 10-year trajectory scenarios.", stage: "mvp", status: "planned", milestone: 6 },
   { slug: "opportunities", title: "Opportunity Finder", purpose: "Rank clearly labeled demo opportunities against the profile.", stage: "mvp", status: "planned", milestone: 6 },
-  { slug: "radar", title: "Opportunity Radar", purpose: "Surface relevant programs, events, and challenges.", stage: "mvp", status: "planned", milestone: 6 },
+  { slug: "radar", title: "Opportunity Radar", purpose: "Surface relevant programs, events, and challenges.", stage: "mvp", status: "available", milestone: 3 },
   { slug: "financial-planner", title: "Financial Reality Planner", purpose: "Model illustrative cost, EMI, and breakeven scenarios.", stage: "mvp", status: "planned", milestone: 6 },
   { slug: "journal", title: "Confidence Journal", purpose: "Compare self-rating with measured readiness over time.", stage: "mvp", status: "planned", milestone: 6 },
-  { slug: "mission", title: "Mission Mode", purpose: "Turn a dream goal into a weighted, trackable mission.", stage: "mvp", status: "planned", milestone: 4 },
+  { slug: "mission", title: "Mission Mode", purpose: "Turn a dream goal into a weighted, trackable mission.", stage: "mvp", status: "available", milestone: 3 },
   { slug: "timeline", title: "Student Timeline", purpose: "Show the complete education-to-career journey.", stage: "mvp", status: "planned", milestone: 3 },
-  { slug: "health-score", title: "Career Health Score", purpose: "Compute transparent readiness from visible category weights.", stage: "mvp", status: "planned", milestone: 4 },
+  { slug: "health-score", title: "Career Health Score", purpose: "Compute transparent readiness from visible category weights.", stage: "mvp", status: "available", milestone: 3 },
 ];
 
 export function getModuleBySlug(slug: string) {

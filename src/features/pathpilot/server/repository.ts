@@ -5,8 +5,11 @@ import { and, desc, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import {
+  achievements,
   careerMatches,
   decisions,
+  missionMilestones,
+  missions,
   roadmapMilestones,
   roadmaps,
   roadmapVersions,
@@ -17,6 +20,7 @@ import {
   defaultOnboardingProfile,
   type CareerDiscoveryResult,
   type DecisionRecord,
+  type MissionPlan,
   type OnboardingProfile,
   type RoadmapPlan,
 } from "../schemas";
@@ -254,5 +258,47 @@ export async function saveRoadmapPlan(userId: string, plan: RoadmapPlan) {
         orderIndex: milestone.orderIndex,
       })),
     );
+  });
+}
+
+export async function saveMissionPlan(userId: string, plan: MissionPlan) {
+  const database = getDb();
+  await database.transaction(async (tx) => {
+    await tx.delete(missions).where(eq(missions.userId, userId));
+    await tx.insert(missions).values({
+      id: plan.id,
+      userId,
+      goal: plan.goal,
+      level: plan.level,
+      progressPct: plan.progressPct,
+      createdAt: new Date(plan.createdAt),
+      updatedAt: new Date(plan.updatedAt),
+    });
+    await tx.insert(missionMilestones).values(
+      plan.milestones.map((milestone) => ({
+        id: milestone.id,
+        missionId: plan.id,
+        title: milestone.title,
+        weight: milestone.weight,
+        status: milestone.status,
+        completedAt:
+          milestone.status === "done" ? new Date(plan.updatedAt) : undefined,
+      })),
+    );
+
+    const unlocked = plan.achievements.filter((achievement) => achievement.unlocked);
+    if (unlocked.length) {
+      await tx
+        .insert(achievements)
+        .values(
+          unlocked.map((achievement) => ({
+            id: randomUUID(),
+            userId,
+            badgeKey: achievement.key,
+            unlockedAt: new Date(plan.updatedAt),
+          })),
+        )
+        .onConflictDoNothing();
+    }
   });
 }

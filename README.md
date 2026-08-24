@@ -23,7 +23,7 @@ npm run dev
 
 Without credentials, the app runs in an explicitly labeled local preview mode. Connected environments use Clerk route protection and Clerk session tokens for Supabase RLS.
 
-The current MVP flow includes six-step onboarding, explained career discovery, Smart College Finder, Entrance Exam Navigator, Degree Advisor, visible Decision Memory, versioned career roadmaps, milestone-level learning-resource retrieval, and the shared Ask PathPilot orchestrator. Deterministic fallbacks keep the complete demo flow available when an OpenAI key is not configured.
+The current MVP flow includes six-step onboarding, explained career discovery, Smart College Finder, Entrance Exam Navigator, Degree Advisor, visible Decision Memory, versioned career roadmaps, milestone-level learning-resource retrieval, Mission Mode, the Progress Dashboard, a transparent Career Health Score, Opportunity Radar, and the shared Ask PathPilot orchestrator. Deterministic fallbacks keep the complete demo flow available when an OpenAI key is not configured.
 
 ## Quality checks
 

@@ -4,6 +4,10 @@ import { generateCollegeMatches } from "@/features/pathpilot/college-engine";
 import { compareDegrees } from "@/features/pathpilot/degree-engine";
 import { recommendExams } from "@/features/pathpilot/exam-engine";
 import { retrieveLearningResources } from "@/features/pathpilot/learning-engine";
+import { calculateCareerHealth, type HealthEngineInput } from "@/features/pathpilot/health-engine";
+import { buildMissionPlan } from "@/features/pathpilot/mission-engine";
+import { buildProgressSnapshot, type ProgressEngineInput } from "@/features/pathpilot/progress-engine";
+import { rankRadarOpportunities, type RadarEngineInput } from "@/features/pathpilot/radar-engine";
 import { generateRoadmap } from "@/features/pathpilot/roadmap-engine";
 import type {
   CareerMatchResult,
@@ -11,6 +15,7 @@ import type {
   DecisionRecord,
   DegreeAdvisorInput,
   ExamNavigatorInput,
+  MissionInput,
   OnboardingProfile,
   RoadmapPlan,
 } from "@/features/pathpilot/schemas";
@@ -129,6 +134,46 @@ export const implementedServices = {
       } satisfies AgentOutput<DecisionRecord>;
     },
   },
+  progressDashboard: {
+    async execute(input: ProgressEngineInput) {
+      const result = buildProgressSnapshot(input);
+      return {
+        result,
+        reasoningRefs: ["progressSnapshot", "roadmap", "mission"],
+        confidenceBand: "high",
+      } satisfies AgentOutput<typeof result>;
+    },
+  },
+  careerHealthScore: {
+    async execute(input: HealthEngineInput) {
+      const result = calculateCareerHealth(input);
+      return {
+        result,
+        reasoningRefs: ["careerHealth.weights", "progressSnapshot"],
+        confidenceBand: "high",
+      } satisfies AgentOutput<typeof result>;
+    },
+  },
+  missionMode: {
+    async execute(input: MissionInput) {
+      const result = buildMissionPlan(input);
+      return {
+        result,
+        reasoningRefs: ["careerHealth.level", "roadmap.milestones"],
+        confidenceBand: "high",
+      } satisfies AgentOutput<typeof result>;
+    },
+  },
+  opportunityRadar: {
+    async execute(input: RadarEngineInput) {
+      const result = rankRadarOpportunities(input);
+      return {
+        result,
+        reasoningRefs: ["profile.interests", "profile.learningStyle", "selectedCareer"],
+        confidenceBand: "medium",
+      } satisfies AgentOutput<typeof result>;
+    },
+  },
 } as const;
 
 export const placeholderServices = {
@@ -137,14 +182,10 @@ export const placeholderServices = {
   githubAnalyzer: createPlaceholderModuleService("githubAnalyzer"),
   opportunityFinder: createPlaceholderModuleService("opportunityFinder"),
   interviewCoach: createPlaceholderModuleService("interviewCoach"),
-  progressDashboard: createPlaceholderModuleService("progressDashboard"),
   careerSimulator: createPlaceholderModuleService("careerSimulator"),
   whatIfSimulator: createPlaceholderModuleService("whatIfSimulator"),
-  careerHealthScore: createPlaceholderModuleService("careerHealthScore"),
-  opportunityRadar: createPlaceholderModuleService("opportunityRadar"),
   studentTimeline: createPlaceholderModuleService("studentTimeline"),
   futureTwin: createPlaceholderModuleService("futureTwin"),
-  missionMode: createPlaceholderModuleService("missionMode"),
   parentAlignment: createPlaceholderModuleService("parentAlignment"),
   cohortCompass: createPlaceholderModuleService("cohortCompass"),
   localOpportunityGraph: createPlaceholderModuleService("localOpportunityGraph"),

@@ -29,15 +29,19 @@ Status: complete and browser-verified.
 - Learning Coach retrieval interface over seeded resources, pgvector-ready
 - End-to-end onboarding → Discovery → Roadmap → Mission handoff
 
-## Milestone 3 — Education decision suite
+## Milestone 3 — Flagship progress experience
+
+Status: complete and browser-verified.
+
+- Mission Mode goal setup, health-based level bands, weighted milestone progress, deterministic next action, and achievement shelf
+- Progress Dashboard aggregation with eight readiness dimensions, seven-day trends, roadmap focus, and Radar preview
+- Deterministic Career Health Score with all seven category weights visible, weekly delta, evidence provenance, and optional fallback narration
+- Opportunity Radar over clearly labeled static program patterns, profile-driven ranking, filters, search, why-relevant explanations, and saved/tracked state
+- Existing versioned Career Roadmap connected directly to Mission Mode and the shared progress model
+
+## Milestone 4 — Simulation and timeline
 
 - Student Timeline with deterministic stage deep links
-
-## Milestone 4 — Flagship progress experience
-
-- Mission Mode goal setup, level bands, weighted milestone progress, achievements
-- Progress Dashboard aggregation and trend snapshots
-- Deterministic Career Health Score with visible category weights and weekly delta
 - Career Simulator gaps, static salary bands, transparent likelihood bands, Convert to Mission flow
 
 ## Milestone 5 — Proof-of-readiness modules
@@ -49,7 +53,7 @@ Status: complete and browser-verified.
 
 ## Milestone 6 — Complete hackathon feature table
 
-- Opportunity Finder and Radar using visibly labeled demo fixtures with real ranking
+- Opportunity Finder using visibly labeled demo fixtures with real ranking
 - What-If Simulator, Future Twin, Financial Planner, Confidence Journal
 - Narrative Portfolio and guardian/counselor sharing flows
 - Parent Alignment, Cohort Compass, Local Opportunity Graph, Skill Decay, simulated Micro-Mentor, Regret Report

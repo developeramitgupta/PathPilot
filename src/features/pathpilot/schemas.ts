@@ -252,6 +252,158 @@ export const learningResourceSchema = z.object({
 
 export type LearningResourceResult = z.infer<typeof learningResourceSchema>;
 
+export const progressDimensionKeySchema = z.enum([
+  "career-readiness",
+  "skills",
+  "projects",
+  "courses",
+  "interview",
+  "resume",
+  "github",
+  "overall",
+]);
+
+export const progressDimensionSchema = z.object({
+  key: progressDimensionKeySchema,
+  label: z.string().min(1),
+  value: z.number().int().min(0).max(100),
+  delta: z.number().int().min(-100).max(100),
+  trend: z.array(z.number().int().min(0).max(100)).length(7),
+  detail: z.string().min(1),
+  href: z.string().startsWith("/"),
+  evidenceMode: z.enum(["live", "mixed", "demo"]),
+});
+
+export const progressSnapshotSchema = z.object({
+  dimensions: z.array(progressDimensionSchema).length(8),
+  activeDays: z.number().int().min(0).max(7),
+  completedThisWeek: z.number().int().nonnegative(),
+  focusMinutes: z.number().int().nonnegative(),
+  generatedAt: z.iso.datetime(),
+});
+
+export type ProgressDimension = z.infer<typeof progressDimensionSchema>;
+export type ProgressSnapshot = z.infer<typeof progressSnapshotSchema>;
+
+export const healthCategoryKeySchema = z.enum([
+  "projects",
+  "resume",
+  "github",
+  "skills-courses",
+  "interview",
+  "consistency",
+  "experience",
+]);
+
+export const healthCategorySchema = z.object({
+  key: healthCategoryKeySchema,
+  label: z.string().min(1),
+  score: z.number().int().min(0).max(100),
+  weight: z.number().int().min(1).max(100),
+  weightedPoints: z.number().min(0).max(100),
+  evidence: z.string().min(1),
+  evidenceMode: z.enum(["live", "mixed", "demo"]),
+  href: z.string().startsWith("/"),
+});
+
+export const careerHealthScoreSchema = z.object({
+  score: z.number().int().min(0).max(100),
+  weeklyDelta: z.number().int().min(-100).max(100),
+  level: z.enum(["explorer", "builder", "achiever", "pro"]),
+  categories: z.array(healthCategorySchema).length(7),
+  weakestCategoryKey: healthCategoryKeySchema,
+  narration: z.string().min(1),
+  history: z.array(z.number().int().min(0).max(100)).length(7),
+  generatedAt: z.iso.datetime(),
+});
+
+export type HealthCategoryKey = z.infer<typeof healthCategoryKeySchema>;
+export type HealthCategory = z.infer<typeof healthCategorySchema>;
+export type CareerHealthScore = z.infer<typeof careerHealthScoreSchema>;
+
+export const missionMilestoneSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  kind: z.enum(["skill", "project", "proof", "career"]),
+  weight: z.number().int().min(1).max(100),
+  status: z.enum(["upcoming", "active", "done"]),
+  sourceRef: z.string().min(1),
+});
+
+export const achievementSchema = z.object({
+  key: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  unlocked: z.boolean(),
+});
+
+export const missionPlanSchema = z.object({
+  id: z.string().min(1),
+  goal: z.string().min(2),
+  targetType: z.enum(["dream-career", "dream-company"]),
+  level: z.enum(["explorer", "builder", "achiever", "pro"]),
+  progressPct: z.number().int().min(0).max(100),
+  nextMilestoneId: z.string().nullable(),
+  milestones: z.array(missionMilestoneSchema).min(5).max(8),
+  achievements: z.array(achievementSchema).min(4),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  mode: z.literal("deterministic"),
+});
+
+export const missionInputSchema = z.object({
+  goal: z.string().trim().min(2).max(100),
+  targetType: z.enum(["dream-career", "dream-company"]),
+  healthScore: z.number().int().min(0).max(100),
+  roadmap: roadmapPlanSchema.nullable().optional(),
+  career: careerMatchSchema.nullable().optional(),
+});
+
+export type MissionMilestone = z.infer<typeof missionMilestoneSchema>;
+export type Achievement = z.infer<typeof achievementSchema>;
+export type MissionPlan = z.infer<typeof missionPlanSchema>;
+export type MissionInput = z.infer<typeof missionInputSchema>;
+
+export const opportunityCategorySchema = z.enum([
+  "hackathon",
+  "scholarship",
+  "competition",
+  "open-source",
+  "event",
+]);
+
+export const radarOpportunitySchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  category: opportunityCategorySchema,
+  organizerLabel: z.string().min(1),
+  format: z.enum(["online", "in-person", "hybrid"]),
+  location: z.string().min(1),
+  skillLevel: z.enum(["beginner", "intermediate", "advanced", "all-levels"]),
+  typicalTiming: z.string().min(1),
+  description: z.string().min(1),
+  tags: z.array(z.string().min(1)).min(2),
+  relevance: z.number().int().min(0).max(100),
+  whyRelevant: z.string().min(1),
+  reasoningRefs: z.array(z.string().min(1)).min(1),
+  isDemo: z.literal(true),
+});
+
+export const radarResultSchema = z.object({
+  opportunities: z.array(radarOpportunitySchema),
+  mode: z.literal("static-ranked-demo"),
+  generatedAt: z.iso.datetime(),
+  disclaimer: z.literal(
+    "Demo opportunity patterns, not live listings. Verify current programs and dates independently.",
+  ),
+});
+
+export type OpportunityCategory = z.infer<typeof opportunityCategorySchema>;
+export type RadarOpportunity = z.infer<typeof radarOpportunitySchema>;
+export type RadarResult = z.infer<typeof radarResultSchema>;
+export type OpportunityAction = "saved" | "dismissed" | "joined";
+
 export const rejectReasons = [
   "Not interested",
   "Too expensive",

@@ -10,7 +10,9 @@ import {
 import type {
   CareerDiscoveryResult,
   DecisionRecord,
+  MissionPlan,
   OnboardingProfile,
+  OpportunityAction,
   RoadmapPlan,
 } from "@/features/pathpilot/schemas";
 
@@ -33,6 +35,8 @@ interface PathPilotStore {
   selectedDegreeKey: string | null;
   roadmap: RoadmapPlan | null;
   resourceProgress: Record<string, ResourceProgress>;
+  mission: MissionPlan | null;
+  opportunityActions: Record<string, OpportunityAction>;
   setOnboardingDraft: (profile: OnboardingProfile) => void;
   completeOnboarding: (
     profile: OnboardingProfile,
@@ -47,6 +51,11 @@ interface PathPilotStore {
   setRoadmap: (roadmap: RoadmapPlan) => void;
   toggleMilestone: (milestoneId: string) => void;
   setResourceProgress: (resourceId: string, status: ResourceProgress) => void;
+  setMission: (mission: MissionPlan) => void;
+  setOpportunityAction: (
+    opportunityId: string,
+    action: OpportunityAction | null,
+  ) => void;
 }
 
 export const usePathPilotStore = create<PathPilotStore>()(
@@ -62,6 +71,8 @@ export const usePathPilotStore = create<PathPilotStore>()(
       selectedDegreeKey: null,
       roadmap: null,
       resourceProgress: {},
+      mission: null,
+      opportunityActions: {},
       setOnboardingDraft: (onboardingDraft) => set({ onboardingDraft }),
       completeOnboarding: (profile, careerDiscovery) =>
         set({
@@ -157,6 +168,17 @@ export const usePathPilotStore = create<PathPilotStore>()(
         set((state) => ({
           resourceProgress: { ...state.resourceProgress, [resourceId]: status },
         })),
+      setMission: (mission) => set({ mission }),
+      setOpportunityAction: (opportunityId, action) =>
+        set((state) => ({
+          opportunityActions: action
+            ? { ...state.opportunityActions, [opportunityId]: action }
+            : Object.fromEntries(
+                Object.entries(state.opportunityActions).filter(
+                  ([id]) => id !== opportunityId,
+                ),
+              ),
+        })),
     }),
     {
       name: "pathpilot-core-loop-v1",
@@ -175,6 +197,8 @@ export const usePathPilotStore = create<PathPilotStore>()(
         selectedDegreeKey: state.selectedDegreeKey,
         roadmap: state.roadmap,
         resourceProgress: state.resourceProgress,
+        mission: state.mission,
+        opportunityActions: state.opportunityActions,
       }),
     },
   ),

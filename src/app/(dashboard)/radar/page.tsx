@@ -1,4 +1,5 @@
-import { ModulePlaceholder } from "@/components/shared/module-placeholder";
-import { getModuleBySlug } from "@/features/modules/registry";
+import { OpportunityRadarScreen } from "@/components/radar/opportunity-radar-screen";
 
-export default function Page() { return <ModulePlaceholder module={getModuleBySlug("radar")!} />; }
+export default function Page() {
+  return <OpportunityRadarScreen />;
+}
