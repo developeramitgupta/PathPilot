@@ -37,6 +37,39 @@
 }
 
 :root {
+  color-scheme: light;
+  --background: #f7f7fb;
+  --foreground: #1b1b28;
+  --card: #ffffff;
+  --card-foreground: #1b1b28;
+  --popover: #ffffff;
+  --popover-foreground: #1b1b28;
+  --primary: #6848e8;
+  --primary-foreground: #ffffff;
+  --secondary: #efeff7;
+  --secondary-foreground: #1b1b28;
+  --muted: #f1f0f7;
+  --muted-foreground: #6c6b7e;
+  --accent: #ebe9f7;
+  --accent-foreground: #1b1b28;
+  --destructive: #c73f5c;
+  --border: rgba(40, 35, 70, 0.12);
+  --input: rgba(40, 35, 70, 0.16);
+  --ring: #6848e8;
+  --success: #18865a;
+  --warning: #a65f00;
+  --radius: 0.75rem;
+  --gradient-signature: linear-gradient(135deg, #6848e8 0%, #2f7de8 100%);
+  --shadow-card: 0 1px 2px rgba(27, 27, 40, 0.04), 0 12px 28px rgba(65, 50, 130, 0.08);
+  --background-glow-one: rgba(47, 125, 232, 0.10);
+  --background-glow-two: rgba(104, 72, 232, 0.08);
+  --glass-surface: rgba(255, 255, 255, 0.80);
+  --grid-fade-line: rgba(61, 51, 112, 0.07);
+  --skeleton-start: rgba(74, 63, 123, 0.07);
+  --skeleton-middle: rgba(104, 72, 232, 0.16);
+}
+
+:root.dark {
   color-scheme: dark;
   --background: #0a0a0f;
   --foreground: #f5f5fa;
@@ -61,6 +94,12 @@
   --radius: 0.75rem;
   --gradient-signature: linear-gradient(135deg, #7c5cfc 0%, #3e8bff 100%);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(124, 92, 252, 0.06);
+  --background-glow-one: rgba(62, 139, 255, 0.08);
+  --background-glow-two: rgba(124, 92, 252, 0.06);
+  --glass-surface: rgba(20, 20, 31, 0.78);
+  --grid-fade-line: rgba(255, 255, 255, 0.028);
+  --skeleton-start: rgba(255, 255, 255, 0.045);
+  --skeleton-middle: rgba(255, 255, 255, 0.11);
 }
 
 * {
@@ -75,8 +114,8 @@ html {
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 80% -10%, rgba(62, 139, 255, 0.08), transparent 32rem),
-    radial-gradient(circle at 10% 10%, rgba(124, 92, 252, 0.06), transparent 28rem),
+    radial-gradient(circle at 80% -10%, var(--background-glow-one), transparent 32rem),
+    radial-gradient(circle at 10% 10%, var(--background-glow-two), transparent 28rem),
     var(--background);
   color: var(--foreground);
   font-family: var(--font-geist), "Geist", sans-serif;
@@ -85,7 +124,7 @@ body {
 
 ::selection {
   background: rgba(124, 92, 252, 0.38);
-  color: #ffffff;
+  color: var(--primary-foreground);
 }
 
 :focus-visible {
@@ -132,7 +171,7 @@ body {
 }
 
 .glass-surface {
-  background: rgba(20, 20, 31, 0.78);
+  background: var(--glass-surface);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card);
   backdrop-filter: blur(18px);
@@ -140,14 +179,14 @@ body {
 
 .grid-fade {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+    linear-gradient(var(--grid-fade-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-fade-line) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: linear-gradient(to bottom, black 0%, transparent 82%);
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(100deg, rgba(255, 255, 255, 0.045) 20%, rgba(255, 255, 255, 0.11) 42%, rgba(255, 255, 255, 0.045) 64%);
+  background: linear-gradient(100deg, var(--skeleton-start) 20%, var(--skeleton-middle) 42%, var(--skeleton-start) 64%);
   background-size: 220% 100%;
   animation: skeleton-shimmer 1.4s ease-in-out infinite;
 }

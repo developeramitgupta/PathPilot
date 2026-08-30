@@ -1,5 +1,5 @@
-import { PlannedModulePage } from "@/components/modules/module-placeholder";
+import { SettingsScreen } from "@/components/settings/settings-screen";
 
 export default function Page() {
-  return <PlannedModulePage slug="settings" />;
+  return <SettingsScreen />;
 }

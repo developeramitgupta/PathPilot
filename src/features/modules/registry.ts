@@ -33,7 +33,7 @@ export const moduleRegistry: ModuleDefinition[] = [
   { slug: "mission", title: "Mission Mode", purpose: "Turn a dream goal into a weighted, trackable mission.", stage: "mvp", status: "available", milestone: 3 },
   { slug: "timeline", title: "Student Timeline", purpose: "Show the complete education-to-career journey.", stage: "mvp", status: "planned", milestone: 3 },
   { slug: "health-score", title: "Career Health Score", purpose: "Compute transparent readiness from visible category weights.", stage: "mvp", status: "available", milestone: 3 },
-  { slug: "settings", title: "Settings", purpose: "Manage profile, account, notifications, and sharing preferences.", stage: "mvp", status: "planned", milestone: 6 },
+  { slug: "settings", title: "Settings", purpose: "Manage profile, appearance, language, and guidance preferences.", stage: "mvp", status: "available", milestone: 6 },
   { slug: "settings/sharing", title: "Guardian & Counselor Sharing", purpose: "Generate and revoke explicit, expiring read-only access grants.", stage: "mvp", status: "planned", milestone: 6 },
 ];
 

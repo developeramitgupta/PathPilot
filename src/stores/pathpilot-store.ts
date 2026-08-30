@@ -32,6 +32,7 @@ interface PathPilotStore {
   mission: MissionPlan | null;
   opportunityActions: Record<string, OpportunityAction>;
   setOnboardingDraft: (profile: OnboardingProfile) => void;
+  updateProfile: (profile: OnboardingProfile) => void;
   completeOnboarding: (
     profile: OnboardingProfile,
     discovery: CareerDiscoveryResult,
@@ -69,6 +70,7 @@ export const usePathPilotStore = create<PathPilotStore>()(
       mission: null,
       opportunityActions: {},
       setOnboardingDraft: (onboardingDraft) => set({ onboardingDraft }),
+      updateProfile: (profile) => set({ profile, onboardingDraft: profile }),
       completeOnboarding: (profile, careerDiscovery) =>
         set({
           profile,

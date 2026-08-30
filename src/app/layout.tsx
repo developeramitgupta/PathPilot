@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import { fraunces, geist, geistMono } from "@/lib/fonts";
 
 import "./globals.css";
@@ -25,7 +26,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#0A0A0F",
-  colorScheme: "dark",
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -40,9 +41,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     >
       <body className="min-h-screen antialiased" suppressHydrationWarning>
         {clerkKey ? (
-          <ClerkProvider publishableKey={clerkKey}>{children}</ClerkProvider>
+          <ClerkProvider publishableKey={clerkKey}><ThemeProvider>{children}</ThemeProvider></ClerkProvider>
         ) : (
-          children
+          <ThemeProvider>{children}</ThemeProvider>
         )}
       </body>
     </html>
