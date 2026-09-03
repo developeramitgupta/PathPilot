@@ -56,6 +56,41 @@ export const missionLevel = pgEnum("MissionLevel", [
   "pro",
 ]);
 export const observerRole = pgEnum("ObserverRole", ["parent", "counselor"]);
+export const studentAgeBand = pgEnum("StudentAgeBand", [
+  "under_13",
+  "minor",
+  "adult",
+]);
+export const consentStatus = pgEnum("ConsentStatus", [
+  "pending",
+  "granted",
+  "revoked",
+  "expired",
+]);
+export const recordReviewStatus = pgEnum("RecordReviewStatus", [
+  "draft",
+  "pending_review",
+  "published",
+  "rejected",
+  "withdrawn",
+]);
+export const sourceKind = pgEnum("SourceKind", [
+  "data_gov",
+  "ugc",
+  "nirf",
+  "josaa",
+  "nta",
+  "github",
+  "official_website",
+  "admin_upload",
+]);
+export const ingestionRunStatus = pgEnum("IngestionRunStatus", [
+  "queued",
+  "running",
+  "succeeded",
+  "failed",
+  "cancelled",
+]);
 
 export const users = pgTable(
   "users",
@@ -94,11 +129,166 @@ export const studentProfiles = pgTable(
     strengths: text("strengths").array(),
     weaknesses: text("weaknesses").array(),
     currentStage: text("current_stage"),
+    ageBand: studentAgeBand("age_band").notNull().default("adult"),
+    preferredLocale: text("preferred_locale").notNull().default("en"),
     onboardingDone: boolean("onboarding_done").notNull().default(false),
     updatedAt: timestamp3("updated_at").notNull(),
   },
   (table) => [
     uniqueIndex("student_profiles_user_id_key").on(table.userId),
+  ],
+);
+
+/** Official/open-data provenance. Only published records may reach public routes. */
+export const dataSources = pgTable(
+  "data_sources",
+  {
+    id: text("id").primaryKey(),
+    key: text("key").notNull(),
+    name: text("name").notNull(),
+    kind: sourceKind("kind").notNull(),
+    websiteUrl: text("website_url").notNull(),
+    apiBaseUrl: text("api_base_url"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp3("created_at").notNull().defaultNow(),
+    updatedAt: timestamp3("updated_at").notNull(),
+  },
+  (table) => [uniqueIndex("data_sources_key_key").on(table.key)],
+);
+
+export const ingestionRuns = pgTable(
+  "ingestion_runs",
+  {
+    id: text("id").primaryKey(),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => dataSources.id, { onDelete: "restrict", onUpdate: "cascade" }),
+    requestedByUserId: text("requested_by_user_id").references(() => users.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    status: ingestionRunStatus("status").notNull().default("queued"),
+    summary: jsonb("summary").$type<Record<string, unknown>>(),
+    errorMessage: text("error_message"),
+    startedAt: timestamp3("started_at"),
+    completedAt: timestamp3("completed_at"),
+    createdAt: timestamp3("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("ingestion_runs_source_id_created_at_idx").on(table.sourceId, table.createdAt),
+    index("ingestion_runs_status_created_at_idx").on(table.status, table.createdAt),
+  ],
+);
+
+export const sourceRecords = pgTable(
+  "source_records",
+  {
+    id: text("id").primaryKey(),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => dataSources.id, { onDelete: "restrict", onUpdate: "cascade" }),
+    ingestionRunId: text("ingestion_run_id").references(() => ingestionRuns.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    externalId: text("external_id").notNull(),
+    entityType: text("entity_type").notNull(),
+    sourceUrl: text("source_url").notNull(),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+    payloadHash: text("payload_hash").notNull(),
+    effectiveFrom: timestamp3("effective_from"),
+    effectiveTo: timestamp3("effective_to"),
+    retrievedAt: timestamp3("retrieved_at").notNull(),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    reviewedByUserId: text("reviewed_by_user_id").references(() => users.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    reviewedAt: timestamp3("reviewed_at"),
+    publishedAt: timestamp3("published_at"),
+    createdAt: timestamp3("created_at").notNull().defaultNow(),
+    updatedAt: timestamp3("updated_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("source_records_source_external_hash_key").on(
+      table.sourceId,
+      table.externalId,
+      table.payloadHash,
+    ),
+    index("source_records_entity_review_retrieved_idx").on(
+      table.entityType,
+      table.reviewStatus,
+      table.retrievedAt,
+    ),
+  ],
+);
+
+export const parentalConsents = pgTable(
+  "parental_consents",
+  {
+    id: text("id").primaryKey(),
+    studentUserId: text("student_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
+    parentEmail: text("parent_email").notNull(),
+    consentTokenHash: text("consent_token_hash").notNull(),
+    status: consentStatus("status").notNull().default("pending"),
+    requestedAt: timestamp3("requested_at").notNull().defaultNow(),
+    grantedAt: timestamp3("granted_at"),
+    revokedAt: timestamp3("revoked_at"),
+    expiresAt: timestamp3("expires_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("parental_consents_token_key").on(table.consentTokenHash),
+    index("parental_consents_student_status_idx").on(table.studentUserId, table.status),
+  ],
+);
+
+export const adminAuditEvents = pgTable(
+  "admin_audit_events",
+  {
+    id: text("id").primaryKey(),
+    actorUserId: text("actor_user_id").references(() => users.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    action: text("action").notNull(),
+    subjectType: text("subject_type").notNull(),
+    subjectId: text("subject_id").notNull(),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    createdAt: timestamp3("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("admin_audit_events_subject_created_at_idx").on(
+      table.subjectType,
+      table.subjectId,
+      table.createdAt,
+    ),
+  ],
+);
+
+/** Audit-safe AI execution metadata. Inputs are hashed; raw sensitive prompts are never logged. */
+export const aiTraces = pgTable(
+  "ai_traces",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
+    graph: text("graph").notNull(),
+    route: text("route").notNull(),
+    promptVersion: text("prompt_version").notNull(),
+    providerModel: text("provider_model"),
+    inputHash: text("input_hash").notNull(),
+    evidenceRefs: text("evidence_refs").array(),
+    confidenceBand: text("confidence_band"),
+    status: text("status").notNull(),
+    failureCode: text("failure_code"),
+    createdAt: timestamp3("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("ai_traces_user_id_created_at_idx").on(table.userId, table.createdAt),
+    index("ai_traces_route_created_at_idx").on(table.route, table.createdAt),
   ],
 );
 
@@ -174,9 +364,21 @@ export const colleges = pgTable(
     hostelAvailable: boolean("hostel_available").notNull().default(false),
     cultureTags: text("culture_tags").array(),
     placementBandLabel: text("placement_band_label"),
+    sourceRecordId: text("source_record_id").references(() => sourceRecords.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    sourceUrl: text("source_url"),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    lastVerifiedAt: timestamp3("last_verified_at"),
+    effectiveFrom: timestamp3("effective_from"),
+    effectiveTo: timestamp3("effective_to"),
     isMockData: boolean("is_mock_data").notNull().default(true),
   },
-  (table) => [index("colleges_state_city_idx").on(table.state, table.city)],
+  (table) => [
+    index("colleges_state_city_idx").on(table.state, table.city),
+    index("colleges_review_verified_idx").on(table.reviewStatus, table.lastVerifiedAt),
+  ],
 );
 
 export const collegeMatches = pgTable(
@@ -223,9 +425,21 @@ export const exams = pgTable(
     acceptedCollegeCount: integer("accepted_college_count").notNull(),
     mockDates: jsonb("mock_dates").$type<Record<string, unknown>>().notNull(),
     tips: text("tips").array(),
+    sourceRecordId: text("source_record_id").references(() => sourceRecords.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    sourceUrl: text("source_url"),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    lastVerifiedAt: timestamp3("last_verified_at"),
+    effectiveFrom: timestamp3("effective_from"),
+    effectiveTo: timestamp3("effective_to"),
     isMockData: boolean("is_mock_data").notNull().default(true),
   },
-  (table) => [uniqueIndex("exams_name_key").on(table.name)],
+  (table) => [
+    uniqueIndex("exams_name_key").on(table.name),
+    index("exams_review_verified_idx").on(table.reviewStatus, table.lastVerifiedAt),
+  ],
 );
 
 export const degreeOptions = pgTable(
@@ -238,9 +452,174 @@ export const degreeOptions = pgTable(
     averageCostInr: integer("average_cost_inr").notNull(),
     flexibilityScore: integer("flexibility_score").notNull(),
     outcomes: text("outcomes").array(),
+    sourceRecordId: text("source_record_id").references(() => sourceRecords.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    sourceUrl: text("source_url"),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    lastVerifiedAt: timestamp3("last_verified_at"),
+    effectiveFrom: timestamp3("effective_from"),
+    effectiveTo: timestamp3("effective_to"),
     isMockData: boolean("is_mock_data").notNull().default(true),
   },
-  (table) => [uniqueIndex("degree_options_key_key").on(table.key)],
+  (table) => [
+    uniqueIndex("degree_options_key_key").on(table.key),
+    index("degree_options_review_verified_idx").on(
+      table.reviewStatus,
+      table.lastVerifiedAt,
+    ),
+  ],
+);
+
+/** Verified institution-specific programmes, rankings and counselling evidence. */
+export const academicProgrammes = pgTable(
+  "academic_programmes",
+  {
+    id: text("id").primaryKey(),
+    institutionId: text("institution_id")
+      .notNull()
+      .references(() => colleges.id, { onDelete: "cascade", onUpdate: "cascade" }),
+    name: text("name").notNull(),
+    field: text("field").notNull(),
+    degree: text("degree").notNull(),
+    durationMonths: integer("duration_months"),
+    annualCostInr: integer("annual_cost_inr"),
+    sourceRecordId: text("source_record_id").references(() => sourceRecords.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    sourceUrl: text("source_url").notNull(),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    lastVerifiedAt: timestamp3("last_verified_at"),
+    effectiveFrom: timestamp3("effective_from"),
+    effectiveTo: timestamp3("effective_to"),
+  },
+  (table) => [
+    index("academic_programmes_institution_review_idx").on(
+      table.institutionId,
+      table.reviewStatus,
+    ),
+  ],
+);
+
+export const institutionRankings = pgTable(
+  "institution_rankings",
+  {
+    id: text("id").primaryKey(),
+    institutionId: text("institution_id")
+      .notNull()
+      .references(() => colleges.id, { onDelete: "cascade", onUpdate: "cascade" }),
+    framework: text("framework").notNull(),
+    category: text("category").notNull(),
+    rankingYear: integer("ranking_year").notNull(),
+    rank: integer("rank").notNull(),
+    score: text("score"),
+    sourceRecordId: text("source_record_id").references(() => sourceRecords.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    sourceUrl: text("source_url").notNull(),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    lastVerifiedAt: timestamp3("last_verified_at"),
+  },
+  (table) => [
+    index("institution_rankings_institution_year_idx").on(
+      table.institutionId,
+      table.rankingYear,
+    ),
+    index("institution_rankings_review_year_idx").on(
+      table.reviewStatus,
+      table.rankingYear,
+    ),
+  ],
+);
+
+export const examEvents = pgTable(
+  "exam_events",
+  {
+    id: text("id").primaryKey(),
+    examId: text("exam_id")
+      .notNull()
+      .references(() => exams.id, { onDelete: "cascade", onUpdate: "cascade" }),
+    cycleYear: integer("cycle_year").notNull(),
+    applicationOpenAt: timestamp3("application_open_at"),
+    applicationCloseAt: timestamp3("application_close_at"),
+    examAt: timestamp3("exam_at"),
+    resultAt: timestamp3("result_at"),
+    sourceRecordId: text("source_record_id").references(() => sourceRecords.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    sourceUrl: text("source_url").notNull(),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    lastVerifiedAt: timestamp3("last_verified_at"),
+  },
+  (table) => [
+    uniqueIndex("exam_events_exam_id_cycle_year_key").on(table.examId, table.cycleYear),
+    index("exam_events_review_cycle_idx").on(table.reviewStatus, table.cycleYear),
+  ],
+);
+
+export const cutoffRecords = pgTable(
+  "cutoff_records",
+  {
+    id: text("id").primaryKey(),
+    institutionId: text("institution_id")
+      .notNull()
+      .references(() => colleges.id, { onDelete: "cascade", onUpdate: "cascade" }),
+    programmeId: text("programme_id").references(() => academicProgrammes.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    examKey: text("exam_key").notNull(),
+    counsellingBody: text("counselling_body").notNull(),
+    cycleYear: integer("cycle_year").notNull(),
+    round: text("round").notNull(),
+    category: text("category").notNull(),
+    quota: text("quota"),
+    openingRank: integer("opening_rank"),
+    closingRank: integer("closing_rank").notNull(),
+    sourceRecordId: text("source_record_id").references(() => sourceRecords.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    sourceUrl: text("source_url").notNull(),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    lastVerifiedAt: timestamp3("last_verified_at"),
+  },
+  (table) => [
+    index("cutoff_records_institution_cycle_idx").on(table.institutionId, table.cycleYear),
+    index("cutoff_records_review_exam_cycle_idx").on(
+      table.reviewStatus,
+      table.examKey,
+      table.cycleYear,
+    ),
+  ],
+);
+
+export const scholarships = pgTable(
+  "scholarships",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    provider: text("provider").notNull(),
+    eligibility: text("eligibility").notNull(),
+    amountLabel: text("amount_label"),
+    deadlineAt: timestamp3("deadline_at"),
+    sourceRecordId: text("source_record_id").references(() => sourceRecords.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    sourceUrl: text("source_url").notNull(),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    lastVerifiedAt: timestamp3("last_verified_at"),
+    effectiveFrom: timestamp3("effective_from"),
+    effectiveTo: timestamp3("effective_to"),
+  },
+  (table) => [
+    index("scholarships_review_deadline_idx").on(table.reviewStatus, table.deadlineAt),
+  ],
 );
 
 export const roadmaps = pgTable(
@@ -323,9 +702,18 @@ export const resources = pgTable(
     skillTag: text("skill_tag").notNull(),
     styleTags: text("style_tags").array(),
     estMinutes: integer("est_minutes"),
+    sourceRecordId: text("source_record_id").references(() => sourceRecords.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    lastVerifiedAt: timestamp3("last_verified_at"),
     embedding: vector("embedding", { dimensions: 1536 }),
   },
-  (table) => [index("resources_skill_tag_idx").on(table.skillTag)],
+  (table) => [
+    index("resources_skill_tag_idx").on(table.skillTag),
+    index("resources_review_verified_idx").on(table.reviewStatus, table.lastVerifiedAt),
+  ],
 );
 
 export const projects = pgTable(
@@ -427,11 +815,23 @@ export const opportunities = pgTable(
     location: text("location").notNull(),
     description: text("description"),
     tags: text("tags").array(),
+    sourceRecordId: text("source_record_id").references(() => sourceRecords.id, {
+      onDelete: "set null",
+      onUpdate: "cascade",
+    }),
+    sourceUrl: text("source_url"),
+    applicationUrl: text("application_url"),
+    deadlineAt: timestamp3("deadline_at"),
+    reviewStatus: recordReviewStatus("review_status").notNull().default("pending_review"),
+    lastVerifiedAt: timestamp3("last_verified_at"),
+    effectiveFrom: timestamp3("effective_from"),
+    effectiveTo: timestamp3("effective_to"),
     isMockData: boolean("is_mock_data").notNull().default(true),
     embedding: vector("embedding", { dimensions: 1536 }),
   },
   (table) => [
     index("opportunities_type_location_idx").on(table.type, table.location),
+    index("opportunities_review_deadline_idx").on(table.reviewStatus, table.deadlineAt),
   ],
 );
 
@@ -723,6 +1123,11 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   missions: many(missions),
   achievements: many(achievements),
   notifications: many(notifications),
+  parentalConsents: many(parentalConsents),
+  requestedIngestionRuns: many(ingestionRuns),
+  reviewedSourceRecords: many(sourceRecords),
+  auditEvents: many(adminAuditEvents),
+  aiTraces: many(aiTraces),
   sharedAccessOwned: many(sharedAccess, { relationName: "sharedAccessOwner" }),
   sharedAccessGranted: many(sharedAccess, {
     relationName: "sharedAccessGrantee",
@@ -735,6 +1140,50 @@ export const studentProfilesRelations = relations(studentProfiles, ({ one }) => 
     references: [users.id],
   }),
 }));
+export const dataSourcesRelations = relations(dataSources, ({ many }) => ({
+  ingestionRuns: many(ingestionRuns),
+  sourceRecords: many(sourceRecords),
+}));
+export const ingestionRunsRelations = relations(ingestionRuns, ({ many, one }) => ({
+  source: one(dataSources, {
+    fields: [ingestionRuns.sourceId],
+    references: [dataSources.id],
+  }),
+  requestedBy: one(users, {
+    fields: [ingestionRuns.requestedByUserId],
+    references: [users.id],
+  }),
+  sourceRecords: many(sourceRecords),
+}));
+export const sourceRecordsRelations = relations(sourceRecords, ({ one }) => ({
+  source: one(dataSources, {
+    fields: [sourceRecords.sourceId],
+    references: [dataSources.id],
+  }),
+  ingestionRun: one(ingestionRuns, {
+    fields: [sourceRecords.ingestionRunId],
+    references: [ingestionRuns.id],
+  }),
+  reviewedBy: one(users, {
+    fields: [sourceRecords.reviewedByUserId],
+    references: [users.id],
+  }),
+}));
+export const parentalConsentsRelations = relations(parentalConsents, ({ one }) => ({
+  student: one(users, {
+    fields: [parentalConsents.studentUserId],
+    references: [users.id],
+  }),
+}));
+export const adminAuditEventsRelations = relations(adminAuditEvents, ({ one }) => ({
+  actor: one(users, {
+    fields: [adminAuditEvents.actorUserId],
+    references: [users.id],
+  }),
+}));
+export const aiTracesRelations = relations(aiTraces, ({ one }) => ({
+  user: one(users, { fields: [aiTraces.userId], references: [users.id] }),
+}));
 export const decisionsRelations = relations(decisions, ({ one }) => ({
   user: one(users, { fields: [decisions.userId], references: [users.id] }),
 }));
@@ -743,6 +1192,41 @@ export const careerMatchesRelations = relations(careerMatches, ({ one }) => ({
 }));
 export const collegesRelations = relations(colleges, ({ many }) => ({
   matches: many(collegeMatches),
+  programmes: many(academicProgrammes),
+  rankings: many(institutionRankings),
+  cutoffs: many(cutoffRecords),
+}));
+export const academicProgrammesRelations = relations(
+  academicProgrammes,
+  ({ many, one }) => ({
+    institution: one(colleges, {
+      fields: [academicProgrammes.institutionId],
+      references: [colleges.id],
+    }),
+    cutoffs: many(cutoffRecords),
+  }),
+);
+export const institutionRankingsRelations = relations(
+  institutionRankings,
+  ({ one }) => ({
+    institution: one(colleges, {
+      fields: [institutionRankings.institutionId],
+      references: [colleges.id],
+    }),
+  }),
+);
+export const examEventsRelations = relations(examEvents, ({ one }) => ({
+  exam: one(exams, { fields: [examEvents.examId], references: [exams.id] }),
+}));
+export const cutoffRecordsRelations = relations(cutoffRecords, ({ one }) => ({
+  institution: one(colleges, {
+    fields: [cutoffRecords.institutionId],
+    references: [colleges.id],
+  }),
+  programme: one(academicProgrammes, {
+    fields: [cutoffRecords.programmeId],
+    references: [academicProgrammes.id],
+  }),
 }));
 export const collegeMatchesRelations = relations(collegeMatches, ({ one }) => ({
   user: one(users, { fields: [collegeMatches.userId], references: [users.id] }),

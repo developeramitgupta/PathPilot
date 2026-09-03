@@ -1,3 +1,3 @@
-import { PlannedModulePage } from "@/components/modules/module-placeholder";
+import { GitHubAnalyzerScreen } from "@/components/github/github-analyzer-screen";
 
-export default function Page() { return <PlannedModulePage slug="github" />; }
+export default function Page() { return <GitHubAnalyzerScreen />; }

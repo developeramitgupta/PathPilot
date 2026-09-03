@@ -5,17 +5,11 @@ import { NextResponse } from "next/server";
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/onboarding(.*)",
-  "/career-discovery(.*)",
-  "/colleges(.*)",
-  "/exams(.*)",
-  "/degrees(.*)",
   "/roadmap(.*)",
   "/learning(.*)",
   "/projects(.*)",
   "/resume(.*)",
   "/github(.*)",
-  "/opportunities(.*)",
-  "/radar(.*)",
   "/interview(.*)",
   "/simulator(.*)",
   "/what-if(.*)",
@@ -26,11 +20,16 @@ const isProtectedRoute = createRouteMatcher([
   "/financial-planner(.*)",
   "/journal(.*)",
   "/settings(.*)",
-  "/api(.*)",
+  "/admin(.*)",
 ]);
 
+const isPublicApi = createRouteMatcher(["/api/catalog(.*)"]);
+const isApiRoute = createRouteMatcher(["/api(.*)"]);
+
 const protectedMiddleware = clerkMiddleware(async (auth, request) => {
-  if (isProtectedRoute(request)) {
+  // Exploration is intentionally public. Personal data, uploads, AI calls and
+  // every non-catalogue API still require a Clerk session.
+  if (isProtectedRoute(request) || (isApiRoute(request) && !isPublicApi(request))) {
     await auth.protect();
   }
 });
